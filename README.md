@@ -1,33 +1,38 @@
-# Procedural Shader Generator
+# Générateur de Shaders Procéduraux
+
+Projet informatique individuel
+Quentin Lopez
 
 ## Description
 
-Web application that dynamically generates **procedural GLSL shaders** with a **real-time 3D preview**.
-Users can select a base material, modify its parameters, and immediately see the result applied to 3D models.
+Application web permettant de générer dynamiquement des **shaders procéduraux en GLSL** avec une **prévisualisation 3D en temps réel**.
+L’utilisateur peut sélectionner un matériau de base, modifier ses paramètres et observer immédiatement le rendu appliqué sur des modèles 3D.
 
-The application is built with:
+L’application est construite avec :
 
-- **HTML / CSS** for the interface
-- **JavaScript** for the logic
-- **GLSL** for shader generation
-- **Three.js (WebGL)** for real-time 3D rendering
+- **HTML / CSS** pour l’interface
+- **JavaScript** pour la logique
+- **GLSL** pour la génération des shaders
+- **Three.js (WebGL)** pour le rendu 3D en temps réel
 
-The system is based on **procedural blocks (nodes)** inspired by Blender shader nodes, allowing patterns such as **Noise, Voronoi, Wave, and Magic Texture** to be combined and applied to materials.
+Le système repose sur des **blocs procéduraux (nodes)** inspirés des _shader nodes_ de Blender, permettant de combiner différents motifs tels que **Noise, Voronoi, Wave et Magic Texture** afin de générer des matériaux procéduraux.
 
-## Run the project
+Une **vidéo de démonstration de la version actuelle du projet** est également disponible dans ce dépôt.
 
-1. Open the project folder in **Visual Studio Code**
-2. Install dependencies:
+## Exécuter le projet
+
+1. Ouvrir le dossier du projet dans **Visual Studio Code**
+2. Installer les dépendances :
 
 ```bash
 npm install
 ```
 
-3. Start the development server:
+3. Lancer le serveur de développement :
 
 ```bash
 npm run dev
 ```
 
-4. Open the **localhost URL** displayed in the terminal in your browser
-   (Recommended: **Google Chrome**).
+4. Copier l’URL **localhost** affichée dans le terminal et l’ouvrir dans votre navigateur
+   (de préférence **Google Chrome**).
