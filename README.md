@@ -19,6 +19,11 @@ Le système repose sur des **blocs procéduraux (nodes)** inspirés des _shader 
 
 Une **vidéo de démonstration de la version actuelle du projet** est également disponible dans ce dépôt.
 
+## Pré-requis : Installer Node.js
+
+Node.js est nécessaire pour gérer les dépendances et exécuter le serveur de développement.
+Télécharge Node.js (version LTS recommandée) depuis le site officiel : [https://nodejs.org](https://nodejs.org)  
+
 ## Exécuter le projet
 
 1. Ouvrir le dossier du "GLSL_Generator_Code" dans **Visual Studio Code**
