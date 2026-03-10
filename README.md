@@ -21,7 +21,7 @@ Une **vidéo de démonstration de la version actuelle du projet** est également
 
 ## Exécuter le projet
 
-1. Ouvrir le dossier du "GLSL_Generator_Code dans **Visual Studio Code**
+1. Ouvrir le dossier du "GLSL_Generator_Code" dans **Visual Studio Code**
 2. Installer les dépendances :
 
 ```bash
