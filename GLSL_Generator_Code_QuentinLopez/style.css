@@ -1,0 +1,275 @@
+/* ---------------------------
+   Main
+   --------------------------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+    font-family: "Arial", sans-serif;
+    background: #111;
+    color: #eee;
+}
+
+
+
+
+/* ---------------------------
+   Left part: Shader selection
+   --------------------------- */ 
+/* Left column */
+#left-column {
+    width: 400px;
+    min-width: 150px;
+    background: #1a1a1a;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    border-right: 2px solid #333;
+}
+
+/* Title column */
+#left-column h2 {
+    color: #ff7519;
+    margin-bottom: 10px;
+}
+
+/* Label selection */
+#left-column label {
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffaa33;
+    margin-top: 12px;
+}
+
+/* Drop-down menu*/
+#left-column select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background: #1f1f1f;
+    color: #ffdd99;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.25s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg fill='%23ffdd99' height='10' viewBox='0 0 24 24' width='10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+    padding-right: 36px;
+}
+
+#left-column select:hover {
+    border-color: #ffaa33;
+    background: #2a2a2a;
+}
+
+#left-column select:focus {
+    outline: none;
+    border-color: #ffaa33;
+    box-shadow: 0 0 6px #ffaa33;
+}
+
+
+
+
+/* ---------------------------
+   Center: Scene + View menu
+   --------------------------- */
+/* Center colomun*/
+#central-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* 3D Scene */
+#scene-container {
+    height: 66%;
+    min-height: 150px;
+    background: #000;
+    position: relative;
+    border-bottom: 2px solid #333;
+}
+
+/* Area view helper (Top right in the scene) */
+#view-helper {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+}
+
+/* View menu */
+#bottom-panel {
+    height: 34%;
+    min-height: 120px;
+    background: #1a1a1a;
+    color: #eee;
+    padding: 15px;
+    overflow-y: auto;
+    border-top: 2px solid #333;
+}
+
+/* Title bottom pannel*/
+#bottom-panel h3 {
+    color: #ff7519;
+    margin-bottom: 10px;
+}
+
+/* Label button bottom*/
+#bottom-panel label {
+    display: block;
+    margin: 8px 0 4px 0;
+    font-size: 13px;
+}
+
+/* Input & selection for the preview*/
+#bottom-panel input, #bottom-panel select {
+    width: 100%;
+    padding: 6px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    border: 1px solid #0a0404;
+    background: #222;
+    color: #eee;
+}
+
+
+
+
+/* ---------------------------
+   Right part: Code preview
+   --------------------------- */
+
+/* Left column */
+#right-column {
+    width: 350px;
+    min-width: 200px;
+    max-width: 50%;
+    background: #1a1a1a;
+    padding: 20px;
+    overflow-y: auto;
+    border-left: 2px solid #333;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Title columun*/
+#right-column h2 {
+    color: #61afff;
+    margin-bottom: 10px;
+}
+
+/* Block for each part of code*/
+.glsl-block {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Line of the button */
+.glsl-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Toggle Button */
+.glsl-toggle {
+    flex: 1;
+    background: #2b2b2b;
+    color: #eee;
+    border: none;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    text-align: center;
+    transition: 0.2s;
+}
+
+.glsl-toggle:hover {
+    background: #ff7519;
+    color: #111;
+}
+
+/* GLSL Code Area */
+.glsl-code {
+    width: 100%;
+    background: #111;
+    color: #61ffea;
+    border: none;
+    resize: none;
+    font-family: "Courier New", monospace;
+    padding: 10px;
+    border-radius: 4px;
+    overflow: auto;
+    display: none;
+    min-height: 700px;
+    max-height: 80vh;
+    flex: 1;
+}
+
+/* Download Button */
+.glsl-download {
+    background: #2b2b2b;
+    color: #eee;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.glsl-download:hover {
+    background: #61afff;
+    color: #111;
+}
+
+
+
+
+/* ---------------------------
+   Resizers
+   --------------------------- */
+/* Left & Right vertical resizers */
+#resizer-left,
+#resizer-right {
+    width: 6px;
+    background: #555;
+    cursor: col-resize;
+    flex-shrink: 0;
+    transition: 0.2s;
+}
+
+#resizer-left:hover,
+#resizer-right:hover {
+    background: #ff7519;
+}
+
+/* Horizontal resizer */
+#resizer-horizontal {
+    height: 2px;
+    background: #555;
+    cursor: row-resize;
+    flex-shrink: 0;
+    transition: 0.2s;
+}
+
+#resizer-horizontal:hover {
+    background: #61afff;
+}
