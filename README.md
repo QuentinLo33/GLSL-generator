@@ -1,36 +1,33 @@
-# GLSL-generator\section{README}
+# Procedural Shader Generator
 
-\subsection{Description du projet}
+## Description
 
-Cette application web permet de générer dynamiquement des \textbf{shaders procéduraux en GLSL} avec une \textbf{prévisualisation 3D en temps réel}.  
-L'utilisateur peut sélectionner un matériau de base, modifier ses paramètres et observer immédiatement le rendu appliqué à différents modèles 3D.
+Web application that dynamically generates **procedural GLSL shaders** with a **real-time 3D preview**.
+Users can select a base material, modify its parameters, and immediately see the result applied to 3D models.
 
-L'application repose sur les technologies suivantes :
+The application is built with:
 
-\begin{itemize}
-\item \textbf{HTML / CSS} pour l'interface utilisateur
-\item \textbf{JavaScript} pour la logique de l'application
-\item \textbf{GLSL} pour la génération des shaders
-\item \textbf{Three.js} et \textbf{WebGL} pour le rendu 3D temps réel
-\end{itemize}
+- **HTML / CSS** for the interface
+- **JavaScript** for the logic
+- **GLSL** for shader generation
+- **Three.js (WebGL)** for real-time 3D rendering
 
-Le système s'appuie sur des \textbf{blocs procéduraux} inspirés des \textit{shader nodes} de Blender permettant de combiner différents motifs comme le \textit{Noise}, le \textit{Voronoi}, le \textit{Wave} ou encore le \textit{Magic Texture}.
+The system is based on **procedural blocks (nodes)** inspired by Blender shader nodes, allowing patterns such as **Noise, Voronoi, Wave, and Magic Texture** to be combined and applied to materials.
 
-\subsection{Exécution du projet}
+## Run the project
 
-Pour exécuter l'application :
+1. Open the project folder in **Visual Studio Code**
+2. Install dependencies:
 
-\begin{enumerate}
-\item Ouvrir le dossier du projet dans \textbf{Visual Studio Code}
-\item Installer les dépendances avec la commande :
-\begin{verbatim}
+```bash
 npm install
-\end{verbatim}
+```
 
-\item Lancer le serveur de développement :
-\begin{verbatim}
+3. Start the development server:
+
+```bash
 npm run dev
-\end{verbatim}
+```
 
-\item Copier le lien \texttt{localhost...} affiché dans le terminal et l'ouvrir dans un navigateur web (de préférence \textbf{Google Chrome}).
-\end{enumerate}
+4. Open the **localhost URL** displayed in the terminal in your browser
+   (Recommended: **Google Chrome**).
