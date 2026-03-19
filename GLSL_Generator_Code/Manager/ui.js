@@ -179,7 +179,7 @@ document.addEventListener("mouseup", () => {
     Initialisation
    ---------------------- */
 const categories = {
-    metal: ["bronze","gold", "silver" ],
+    metal: ["bronze", "silver", "gold" ],
     wood: ["woodPlank"],
     cloth: ["wovenFabric"],
     test: ["noiseTest", "voronoiTest", "waveTest", "magicTest"],

@@ -63,27 +63,24 @@ function animate() {
     requestAnimationFrame(animate);
     controls.update();
 
-    // resize handling -> update size of the scene and camera
     if (resizeRequested) {
         updateRendererSize();
         resizeRequested = false;
     }
 
-    // update uniform for ambient
+    // ← ajouter ces lignes
+    if (mesh && mesh.material && mesh.material.uniforms) {
+        mesh.material.uniforms.uCameraPos.value.copy(camera.position);
+    }
+
     if (updateAmbient && mesh && mesh.material && mesh.material.uniforms) {
-        const color = ambientLight.color;
-        mesh.material.uniforms.uAmbientColor.value.copy(color);
+        mesh.material.uniforms.uAmbientColor.value.copy(ambientLight.color);
         updateAmbient = false;
     }
 
-    // render view helper
-    if(helperRenderer && viewHelper && helperCamera){
-        renderViewHelper();
-    }
-
+    if (helperRenderer && viewHelper && helperCamera) renderViewHelper();
     renderer.render(scene, camera);
 }
-
 
 function updateRendererSize() {
     if (!renderer || !camera || !containerRef) return;
@@ -112,7 +109,6 @@ export function requestAmbientUpdate(){
 
 
 export function createMesh(type = "cube") {
-    // remove previous model
     if (currentModel) {
         scene.remove(currentModel);
         if (currentModel.geometry) currentModel.geometry.dispose();
@@ -121,16 +117,18 @@ export function createMesh(type = "cube") {
         mesh = null;
     }
 
-    // create geometry
     let geometry;
     switch (type) {
-        case "sphere": geometry = new THREE.SphereGeometry(0.5, 32, 32); break;
-        case "torus": geometry = new THREE.TorusGeometry(0.5, 0.2, 16, 100); break;
-        case "cylinder": geometry = new THREE.CylinderGeometry( 0.5, 0.5, 1, 32 ); break;
-        default: geometry = new THREE.BoxGeometry();
+        case "sphere":   geometry = new THREE.SphereGeometry(0.5, 32, 32); break;
+        case "torus":    geometry = new THREE.TorusGeometry(0.5, 0.2, 16, 100); break;
+        case "cylinder": geometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 32); break;
+        default:
+            geometry = new THREE.BoxGeometry(1, 1, 1, 2, 2, 2);
+            geometry = geometry.toNonIndexed();       // sépare les vertices
+            geometry.computeVertexNormals();           // recalcule les normales smooth
+            break;
     }
 
-    // create mesh
     mesh = new THREE.Mesh(geometry);
     mesh.scale.set(2, 2, 2);
     mesh.position.y = 0.5;
