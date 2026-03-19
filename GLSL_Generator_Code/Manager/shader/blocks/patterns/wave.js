@@ -34,7 +34,7 @@ export class WaveBlock {
         const phase = this.phase.toFixed(2);
 
         const globals = `
-// WAVE GLOBAL: ${this.name}, type: ${this.type}, pattern: ${this.pattern}, axis: ${this.axis}
+// WAVE GLOBAL:
 float waveFunc(float x, int type){
     // Sin
     if(type == 0) return sin(x);

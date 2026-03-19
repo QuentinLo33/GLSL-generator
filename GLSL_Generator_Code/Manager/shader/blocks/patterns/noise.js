@@ -51,7 +51,7 @@ export class NoiseBlock {
       `;
         // === globals ===
         const globals = 
-`// NOISE GLOBAL: ${this.name}, normalized: ${this.normalized}
+`// NOISE GLOBAL:
 // Simplex / Perlin noise 3D
 vec3 mod289(vec3 x){return x - floor(x/289.0)*289.0;}
 vec4 mod289(vec4 x){return x - floor(x/289.0)*289.0;}

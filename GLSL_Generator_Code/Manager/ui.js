@@ -27,7 +27,7 @@ export async function initUI() {
     modelSelect.addEventListener("change", () => {
         const value = modelSelect.value;
 
-        if (["cube", "sphere", "torus"].includes(value)) {
+        if (["cube", "sphere", "torus", "cylinder"].includes(value)) {
             createMesh(value);
         } else {
             loadModel(`/Models/${value}.glb`);
@@ -180,6 +180,8 @@ document.addEventListener("mouseup", () => {
    ---------------------- */
 const categories = {
     metal: ["bronze","gold", "silver" ],
+    wood: ["woodPlank"],
+    cloth: ["wovenFabric"],
     test: ["noiseTest", "voronoiTest", "waveTest", "magicTest"],
 };
 

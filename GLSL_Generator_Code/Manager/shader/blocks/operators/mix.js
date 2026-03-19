@@ -16,7 +16,7 @@ export class MixBlock {
         const f = this.factor.toFixed(2);
 
         const globals =
-`// MIX GLOBAL: ${this.name}, ${this.name} mode
+`// MIX GLOBAL:
 vec3 mixModes(vec3 a, vec3 b, float factor, int mode){
     vec3 result = a;
 
