@@ -1,8 +1,15 @@
 import { ShaderGraph } from "./shaderGraph.js";
 
 const graphs = {
+    // metal
     "metal_bronze": () => import("./graphs/metal/bronze.js"),
 
+    // wood
+    "wood_woodPlank": () => import("./graphs/wood/woodPlank.js"),
+
+    // cloth
+    "cloth_wovenFabric": () => import ("./graphs/cloth/wovenFabric.js"),
+    //test
     "test_noiseTest": () => import("./graphs/test/noiseTest.js"),
     "test_voronoiTest": () => import("./graphs/test/voronoiTest.js"),
     "test_waveTest": () => import("./graphs/test/waveTest.js"),

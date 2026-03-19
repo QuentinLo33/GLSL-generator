@@ -17,7 +17,7 @@ export class MappingBlock {
   generateCode() {
 
     let mainCode =
-`   // MAPPING MAIN: ${this.name}, ${this.mode} mode`;
+`   // MAPPING MAIN:`;
     const [sx, sy, sz] = this.scale.map(v => v.toFixed(3));
     const [ox, oy, oz] = this.offset.map(v => v.toFixed(3));
     const [rx, ry, rz] = this.rotation.map(v => v.toFixed(4));

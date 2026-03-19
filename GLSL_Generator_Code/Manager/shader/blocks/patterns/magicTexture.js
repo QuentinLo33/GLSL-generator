@@ -18,7 +18,7 @@ export class MagicTextureBlock {
         const dist = this.distortion.toFixed(2);
 
         const globals =
-`// MAGIC TEXTURE GLOBALS: ${this.name}
+`// MAGIC TEXTURE GLOBALS:
 vec3 magicTexture(vec3 p, float scale, int depth, float distortion) {
     p *= scale;
     float value = 0.0;

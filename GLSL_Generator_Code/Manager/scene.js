@@ -126,6 +126,7 @@ export function createMesh(type = "cube") {
     switch (type) {
         case "sphere": geometry = new THREE.SphereGeometry(0.5, 32, 32); break;
         case "torus": geometry = new THREE.TorusGeometry(0.5, 0.2, 16, 100); break;
+        case "cylinder": geometry = new THREE.CylinderGeometry( 0.5, 0.5, 1, 32 ); break;
         default: geometry = new THREE.BoxGeometry();
     }
 
