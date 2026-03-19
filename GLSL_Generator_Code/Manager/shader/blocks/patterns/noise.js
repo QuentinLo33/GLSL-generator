@@ -126,51 +126,37 @@ float snoise(vec3 v){
     return 42.0*dot(m*m, vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
 }
 
-vec3 getNoise(vec3 pos, int detail, float scale, float roughness, float lacunarity, float distortion){
-
+vec3 getNoise(vec3 pos, int detail, float scale, float roughness, float lacunarity, float distortion, bool normalized){
     vec3 p = pos * scale;
-
     float value = 0.0;
     float amplitude = 0.5;
     float frequency = 1.0;
     float maxValue = 0.0;
 
-    // Loop through multiple octaves
     for(int i=0;i<detail;i++){
-        // Sample simplex noise
         float n = snoise(p * frequency);
-
-        // Accumulate weighted noise
         value += n * amplitude;
-
-        // Track total amplitude for normalization
         maxValue += amplitude;
-
-        // Prepare next octave
         amplitude *= roughness;
         frequency *= lacunarity;
     }
 
-    // Normalize accumulated noise
     value /= maxValue;
     
-    // normalized -> remap from [-1,1] to [0,1]
-    if (${this.normalized ? "true" : "false"}) {
+    if (normalized) {
         value = value * 0.5 + 0.5;
     }
     
-    // distortion
     value += snoise(pos * distortion) * 0.1;
-
     return vec3(value);
 }
         
 `;
 
         // === mainCode ===
-        const mainCode = 
+const mainCode = 
 `    // NOISE MAIN: ${this.name}, normalized: ${this.normalized}
-    vec3 ${this.name} = getNoise(${this.input}, ${d}, ${s}, ${r}, ${l}, ${dist});
+    vec3 ${this.name} = getNoise(${this.input}, ${d}, ${s}, ${r}, ${l}, ${dist}, ${this.normalized ? "true" : "false"});
 
 `;
         return { globals, mainCode };

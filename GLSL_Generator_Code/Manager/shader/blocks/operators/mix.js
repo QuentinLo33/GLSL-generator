@@ -13,38 +13,21 @@ export class MixBlock {
     }
 
     generateCode() {
-        const f = this.factor.toFixed(2);
+    const f = typeof this.factor === "string"
+        ? this.factor
+        : this.factor.toFixed(2);
 
-        const globals =
+    const globals =
 `// MIX GLOBAL:
 vec3 mixModes(vec3 a, vec3 b, float factor, int mode){
-    vec3 result = a;
-
-    // Darken
-    if(mode == 0){ result = min(a,b); }
-
-    // Lighten                            
-    else if(mode == 1){ result = max(a,b); }
-
-    // Multiply
-    else if(mode == 2){ result = a * b; }
-
-    // Add                              
-    else if(mode == 3){ result = a + b; }
-
-    // Subtract                             
-    else if(mode == 4){ result = a - b; }
-    
-    // Linear light
-    else if(mode == 5){ result = clamp(a + 2.0 * b - 1.0, 0.0, 1.0);}
-
-    // Default linear interpolation
-    else { result = mix(a, b, factor); }  
-
-    // Blend with factor
-    return mix(a, result, factor);
+    if(mode == 0){ return mix(a, min(a,b), factor); }   // darken
+    if(mode == 1){ return mix(a, max(a,b), factor); }   // lighten
+    if(mode == 2){ return mix(a, a * b, factor); }      // multiply
+    if(mode == 3){ return clamp(mix(a, a + b, factor), 0.0, 1.0); } // add
+    if(mode == 4){ return mix(a, a - b, factor); }      // subtract
+    if(mode == 5){ return mix(a, clamp(a + 2.0*b - 1.0, 0.0, 1.0), factor); } // linear light
+    return mix(a, b, factor); // default: mix
 }
-
 `;
 
         // map string mode -> int

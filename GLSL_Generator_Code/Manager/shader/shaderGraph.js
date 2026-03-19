@@ -17,14 +17,12 @@ export class ShaderGraph {
 
         const globalsSet = new Set();
 
-        // Look for the connection block
         let connectionBlock = null;
         let noiseBlock = false;
-        for (const block of this.blocks) {
 
+        for (const block of this.blocks) {
             const code = block.generateCode();
 
-            // Avoid dupplication
             if (code.globals && !globalsSet.has(code.globals)) {
                 globalsSet.add(code.globals);
                 globals += code.globals + "\n";
@@ -34,48 +32,49 @@ export class ShaderGraph {
                 mainCode += code.mainCode + "\n";
             }
 
-            if (block.constructor.name === "ConnectionBlock") {
-                connectionBlock = block;
-            }
-
-            if (block.constructor.name === "NoiseBlock") {
-                noiseBlock = true;
-            }
+            if (block.constructor.name === "ConnectionBlock") connectionBlock = block;
+            if (block.constructor.name === "NoiseBlock") noiseBlock = true;
         }
-        
-        // some block function use snoise
-        if(mainCode.includes("snoise") && noiseBlock == false) {
+
+        if (mainCode.includes("snoise") && noiseBlock == false) {
             const tmpNoise = new NoiseBlock("_tmp", { normalized: false });
             globals += tmpNoise.generateCode().globals + "\n";
         }
 
-        // Define final output
         if (connectionBlock) {
             const connections = connectionBlock.connections || {};
             const colorVar = connections.color || "vec3(1.0)";
-            const bumpVar = connections.bump || "vec3(0.0)";
-            const roughnessVar = connections.roughness || "0.5";
-            const metallicVar = connections.metallic || "0.0";
+            const bumpVar  = connections.bump   || "vec3(0.0)";
+
+            const roughnessRaw = connections.roughness || "0.5";
+            const metallicRaw  = connections.metallic  || "0.0";
+
+            const isNumber = (v) => !isNaN(parseFloat(v)) && isFinite(v);
+            const roughnessVar = isNumber(roughnessRaw) ? roughnessRaw : roughnessRaw + ".r";
+            const metallicVar  = isNumber(metallicRaw)  ? metallicRaw  : metallicRaw  + ".r";
 
             mainCode +=
 `    // Define final outputs with connection
     vec3 finalColor = ${colorVar};
     vec3 finalBump = ${bumpVar};
-    float finalRoughness = ${roughnessVar}.r;
+    float finalRoughness = ${roughnessVar};
     float finalMetallic = ${metallicVar};
     `;
-        }
-        else {
-        mainCode +=
+        } else {
+            mainCode +=
 `    // Define final outputs
     vec3 finalColor = ${this.blocks[this.blocks.length - 1].name};
     vec3 finalBump = vec3(0.0);
     float finalRoughness = 0.5;
-    
+    float finalMetallic = 0.0;
     `;
         }
 
         // Vertex shader
+        // - vWorldPosition : position en world space pour le lighting
+        // - vNormal        : normale en world space (via normalMatrix de THREE = transpose inverse de modelViewMatrix)
+        //                    on utilise normalMatrix qui est déjà calculé correctement par THREE
+        // - vPosition      : position locale pour les patterns procéduraux
         vertexShader = `
 // ==================
 // Vertex Shader
@@ -84,33 +83,36 @@ export class ShaderGraph {
 varying vec3 vNormal;
 varying vec3 vPosition;
 varying vec2 vUv;
+varying vec3 vWorldPosition;
 
 void main() {
-    vNormal = normalMatrix * normal;
+    vWorldPosition = (modelMatrix * vec4(position, 1.0)).xyz;
 
-    vPosition = position;   // local space
+    // normalMatrix de THREE = transpose(inverse(modelViewMatrix))
+    // On veut world space → on recalcule manuellement
+    vNormal = normalize(mat3(modelMatrix) * normal);
+
+    vPosition = position;
     vUv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }
         `;
 
-        // Fragment shader avec bump et roughness
         fragmentShader = `
 // ==================
 // Fragment Shader
 // ==================
 
-// COMMON PART VARYING & UNIFORM
 precision highp float;
 varying vec3 vNormal;
 varying vec3 vPosition;
 varying vec2 vUv;
+varying vec3 vWorldPosition;
 
 uniform vec3 uLightColor;
 uniform vec3 uLightPos;
 uniform vec3 uCameraPos;
 uniform vec3 uAmbientColor;
-
 
 ${globals}
 
@@ -118,44 +120,67 @@ void main() {
 
 ${mainCode}
 
-    // COMMON PART MAIN
-    // Normal + Bump
-    vec3 N = normalize(vNormal + finalBump * 0.5);
-    vec3 L = normalize(uLightPos - vPosition);
-    vec3 V = normalize(uCameraPos - vPosition);
-    vec3 R = reflect(-L, N);
-    float lambert = max(dot(N, L), 0.0);
+    vec3 N = normalize(vNormal + finalBump * 0.15);
+    vec3 V = normalize(uCameraPos - vWorldPosition);
+    vec3 L = normalize(uLightPos - vWorldPosition);
+    vec3 H = normalize(L + V);
+    vec3 R = reflect(-V, N);  // direction de réflexion
 
-    // Specular
-    float shininess = mix(16.0, 256.0, 1.0 - finalRoughness);
-    float spec = pow(max(dot(R, V), 0.0), shininess);
-    vec3 specularColor = finalColor; // métal
-    vec3 specular = specularColor * spec;
+    float NdotL = max(dot(N, L), 0.0);
+    float NdotH = max(dot(N, H), 0.0);
+    float NdotV = max(dot(N, V), 0.0);
+
+    // Fresnel Schlick
+    float fresnel = 0.5 + 0.5 * pow(1.0 - NdotV, 3.0);
+
+    // Fake environment map — simule un studio 3 points
+    // Le vecteur R indique ce que le métal "voit" autour de lui
+    //vec3 envLight  = vec3(0.9, 0.75, 0.5) * 0.8;   // était 1.2, trop fort
+    //vec3 envFill   = vec3(0.3, 0.4,  0.6) * 0.3;
+    //vec3 envGround = vec3(0.1, 0.05, 0.01) * 0.5;  // creux plus sombres
+    
+    vec3 envLight  = vec3(1.0,  1.0,  1.0)  * 1.0;   // blanc pur
+    vec3 envFill   = vec3(0.6,  0.6,  0.65) * 0.3;   // gris très neutre
+    vec3 envGround = vec3(0.1,  0.1,  0.1)  * 0.4;   // sol sombre neutre
+
+    // Mélange selon la direction de réflexion
+    float upness    = R.y * 0.5 + 0.5;          // 0 = bas, 1 = haut
+    float sideness  = abs(R.x) * 0.5 + 0.5;    // bords latéraux
+
+    vec3 envColor = mix(envGround, envLight, upness);
+    envColor      = mix(envColor,  envFill,  sideness * (1.0 - upness));
+
+    // Réflexion d'environnement — c'est ça qui fait "métal"
+    vec3 envReflect = envColor * finalColor * fresnel * finalMetallic * 2.0;  
+
+    // Spéculaire ponctuel
+    float shininess = mix(32.0, 512.0, 1.0 - finalRoughness);
+    float spec = pow(NdotH, shininess);
+    vec3 specular = finalColor * spec * 1.5;
 
     // Diffuse
-    vec3 diffuse = finalColor * lambert * (1.0 - finalMetallic);
+    vec3 diffuse = finalColor * NdotL * (1.0 - finalMetallic * 0.9);
 
-    // Ambient
-    vec3 ambient = uAmbientColor * finalColor * (1.0 - finalMetallic) + uAmbientColor * 0.03;
+    // Ambient minimal
+    vec3 ambient = uAmbientColor * finalColor * 0.15;
 
-    // Final
-    gl_FragColor = vec4(ambient + diffuse + specular, 1.0);
-}
+    gl_FragColor = vec4(ambient + diffuse + specular + envReflect, 1.0);
+    }
     `;
 
-    return { vertexShader, fragmentShader };}
+        return { vertexShader, fragmentShader };
+    }
 
     createMaterial(camera, light) {
         const { vertexShader, fragmentShader } = this.generateShaderStrings();
-        const ambientColor = getAmbientInputColor();
         const material = new THREE.ShaderMaterial({
             vertexShader,
             fragmentShader,
             uniforms: {
-                uLightColor: { value: new THREE.Color(1, 1, 1) },
-                uLightPos: { value: new THREE.Vector3(5, 5, 5) },
-                uCameraPos: { value: camera.position },
-                uAmbientColor: { value: getAmbientInputColor() }
+                uLightColor:  { value: new THREE.Color(1, 1, 1) },
+                uLightPos:    { value: new THREE.Vector3(3, 3, 2) },
+                uCameraPos:   { value: camera.position.clone() }, // clone pour éviter référence partagée
+                uAmbientColor:{ value: getAmbientInputColor() }
             },
             extensions: { derivatives: true }
         });
@@ -163,10 +188,5 @@ ${mainCode}
     }
 }
 
-export function getVertexShader() {
-    return vertexShader;
-}
-
-export function getFragmentShader() {
-    return fragmentShader;
-}
+export function getVertexShader() { return vertexShader; }
+export function getFragmentShader() { return fragmentShader; }

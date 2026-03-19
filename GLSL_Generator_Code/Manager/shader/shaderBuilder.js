@@ -3,7 +3,7 @@ import { ShaderGraph } from "./shaderGraph.js";
 const graphs = {
     // metal
     "metal_bronze": () => import("./graphs/metal/bronze.js"),
-
+    "metal_silver": () => import("./graphs/metal/silver.js"),
     // wood
     "wood_woodPlank": () => import("./graphs/wood/woodPlank.js"),
 
