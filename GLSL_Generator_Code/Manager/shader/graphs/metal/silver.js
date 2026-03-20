@@ -25,7 +25,7 @@ export function getGraph() {
     });
 
     // Argent : gris très froid, quasi blanc sur les reflets
-    const colorSilver = new ColorRampBlock("colorSilver", {
+    const colorsteel = new ColorRampBlock("colorsteel", {
         input: "noiseSurface.r",
         positions: [0, 0.25, 0.55, 0.8, 1.0],
         colors: [
@@ -53,11 +53,11 @@ export function getGraph() {
     });
 
     const output = new ConnectionBlock("output", {
-        color: "colorSilver",
+        color: "colorsteel",
         roughness: "roughness",
         bump: "bump",
         metallic: 0.98
     });
 
-    return [mapping1, noiseSurface, colorSilver, roughness, bump, output];
+    return [mapping1, noiseSurface, colorsteel, roughness, bump, output];
 }

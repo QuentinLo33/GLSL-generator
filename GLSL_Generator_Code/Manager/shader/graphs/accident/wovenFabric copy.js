@@ -41,7 +41,7 @@ export function getGraph() {
         type: "sine",
         pattern: "bands",
         axis: "Y",
-        scale: 1000.0,
+        scale: 600.0,
         distortion: 2.0,
         detail: 3,
         detailScale: 2.0,
@@ -55,7 +55,7 @@ export function getGraph() {
         type: "sine",
         pattern: "bands",
         axis: "X",
-        scale: 1000.0,
+        scale: 600.0,
         distortion: 2.0,
         detail: 3,
         detailScale: 2.0,
@@ -63,13 +63,12 @@ export function getGraph() {
         phase: 1.0
     });
 
-    
     // 5. Mix des deux vagues pour effet tissage
     const mixWave = new MixBlock("mixWave", {
         inputA: "wave1",
         inputB: "wave2",
         mode: "multiply",
-        factor: 0.5
+        factor: 0.6
     });
 
     // 6. Remap pour roughness
@@ -81,27 +80,18 @@ export function getGraph() {
         toMax: 0.8
     });
 
-    const waveRemap = new MapRange("waveRemap", {
-    input: "mixWave.r",
-    fromMin: 0.3,  // ← coupe les valeurs basses
-    fromMax: 1.0,
-    toMin: 0.0,
-    toMax: 1.0,
-    mode: "smoothstep"
-});
-
     // 7. Color ramp pour couleur des fibres
     const colorRamp = new ColorRampBlock("colorRamp", {
-        input: "waveRemap.r",  // ← utilise waveRemap pas mixWave
-        positions: [0.0, 0.7, 1.0],
+        input: "mixWave.r",
+        positions: [0.1, 0.2, 0.3],
         colors: [
-            [31, 31, 115],   // fibre bleue
-            [31, 31, 115],  // bord trou
-            [24, 24, 99],  // centre trou blanc
+            [250, 0, 0], // clair
+            [0, 250, 0], // clair
+            [0, 0, 0]    // foncé
         ],
         mode: "linear"
     });
-    
+
     // 8. Bump subtil pour relief
     const bump = new BumpMultiplierBlock("bump", {
         input: "mixWave",
@@ -124,7 +114,6 @@ export function getGraph() {
         wave2,
         mixWave,
         roughnessMap,
-        waveRemap,
         colorRamp,
         bump,
         output

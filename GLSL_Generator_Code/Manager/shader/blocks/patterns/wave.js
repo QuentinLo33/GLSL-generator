@@ -54,36 +54,31 @@ float waveFunc(float x, int type){
         // choisir la composante selon l'axe
         const axisComp = this.axis === "X" ? "pos.x" : this.axis === "Y" ? "pos.y" : "pos.z";
 
-        const mainCode = `
-     // WAVE MAIN: ${this.name}, type: ${this.type}, pattern: ${this.pattern}, axis: ${this.axis}
-    // Add simplex noise
-     vec3 pos = ${this.input} * ${s};
-    pos += snoise(${this.input} * ${dist}) * ${dist};
-    float value = 0.0;
+const prefix = this.name + "_";
 
-    // Pattern: rings or bands
-    ${this.pattern === "rings" ? `value = length(pos.xy);` : `value = ${axisComp};
-    `}
+const mainCode = 
+`
+    vec3 ${prefix}pos = ${this.input} * ${s};
+    ${prefix}pos += snoise(${this.input} * ${dist}) * ${dist};
+    float ${prefix}value = 0.0;
 
-    // Apply wave function
-    value = waveFunc(value + ${phase}, ${typeIndex});
+    ${this.pattern === "rings" ? `${prefix}value = length(${prefix}pos.xy);` : `${prefix}value = ${this.axis === "X" ? `${prefix}pos.x` : this.axis === "Y" ? `${prefix}pos.y` : `${prefix}pos.z`};`}
 
-    // Details (octaves)
-    float amp = 0.5;
-    float freq = 1.0;
-    float maxVal = 0.0;
+    ${prefix}value = waveFunc(${prefix}value + ${phase}, ${typeIndex});
+
+    float ${prefix}amp = 0.5;
+    float ${prefix}freq = 1.0;
+    float ${prefix}maxVal = 0.0;
     for(int i=0;i<${d};i++){
-        value += waveFunc(value * freq, ${typeIndex}) * amp;
-        maxVal += amp;
-        amp *= ${dR};
-        freq *= ${dS};
-}
+        ${prefix}value += waveFunc(${prefix}value * ${prefix}freq, ${typeIndex}) * ${prefix}amp;
+        ${prefix}maxVal += ${prefix}amp;
+        ${prefix}amp *= ${dR};
+        ${prefix}freq *= ${dS};
+    }
 
-    value /= maxVal;
+    vec3 ${this.name} = vec3(${prefix}value);
 
-    vec3 ${this.name} = vec3(value);
-
-`;
+    `;
 
         return { globals, mainCode };
     }
