@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { getAmbientInputColor } from "../ui";
+import { getAmbientInputColor, getEnvColors } from "../ui";
 import { NoiseBlock } from "./blocks/patterns/noise";
 
 export let vertexShader="";
@@ -114,6 +114,11 @@ uniform vec3 uLightPos;
 uniform vec3 uCameraPos;
 uniform vec3 uAmbientColor;
 
+
+uniform vec3 uEnvLight;
+uniform vec3 uEnvFill;
+uniform vec3 uEnvGround;
+
 ${globals}
 
 void main() {
@@ -134,26 +139,22 @@ ${mainCode}
     float fresnel = 0.5 + 0.5 * pow(1.0 - NdotV, 3.0);
 
     // Fake environment map — simule un studio 3 points
-    // Le vecteur R indique ce que le métal "voit" autour de lui
-    //vec3 envLight  = vec3(0.9, 0.75, 0.5) * 0.8;   // était 1.2, trop fort
-    //vec3 envFill   = vec3(0.3, 0.4,  0.6) * 0.3;
-    //vec3 envGround = vec3(0.1, 0.05, 0.01) * 0.5;  // creux plus sombres
     
-    vec3 envLight  = vec3(1.0,  1.0,  1.0)  * 1.0;   // blanc pur
-    vec3 envFill   = vec3(0.6,  0.6,  0.65) * 0.3;   // gris très neutre
-    vec3 envGround = vec3(0.1,  0.1,  0.1)  * 0.4;   // sol sombre neutre
+    vec3 envLight  = uEnvLight;
+    vec3 envFill   = uEnvFill;
+    vec3 envGround = uEnvGround;
 
-    // Mélange selon la direction de réflexion
+    // Mix with reflection
     float upness    = R.y * 0.5 + 0.5;          // 0 = bas, 1 = haut
     float sideness  = abs(R.x) * 0.5 + 0.5;    // bords latéraux
 
     vec3 envColor = mix(envGround, envLight, upness);
     envColor      = mix(envColor,  envFill,  sideness * (1.0 - upness));
 
-    // Réflexion d'environnement — c'est ça qui fait "métal"
+    // Fake environment
     vec3 envReflect = envColor * finalColor * fresnel * finalMetallic * 2.0;  
 
-    // Spéculaire ponctuel
+    // Specular
     float shininess = mix(32.0, 512.0, 1.0 - finalRoughness);
     float spec = pow(NdotH, shininess);
     vec3 specular = finalColor * spec * 1.5;
@@ -165,7 +166,7 @@ ${mainCode}
     vec3 ambient = uAmbientColor * finalColor * 0.15;
 
     gl_FragColor = vec4(ambient + diffuse + specular + envReflect, 1.0);
-    }
+}
     `;
 
         return { vertexShader, fragmentShader };
@@ -173,6 +174,7 @@ ${mainCode}
 
     createMaterial(camera, light) {
         const { vertexShader, fragmentShader } = this.generateShaderStrings();
+        const { envLight, envFill, envGround } = getEnvColors();
         const material = new THREE.ShaderMaterial({
             vertexShader,
             fragmentShader,
@@ -180,7 +182,10 @@ ${mainCode}
                 uLightColor:  { value: new THREE.Color(1, 1, 1) },
                 uLightPos:    { value: new THREE.Vector3(3, 3, 2) },
                 uCameraPos:   { value: camera.position.clone() }, // clone pour éviter référence partagée
-                uAmbientColor:{ value: getAmbientInputColor() }
+                uAmbientColor:{ value: getAmbientInputColor() },
+                uEnvLight:  { value: envLight.clone() },
+                uEnvFill:   { value: envFill.clone() },
+                uEnvGround: { value: envGround.clone() }
             },
             extensions: { derivatives: true }
         });

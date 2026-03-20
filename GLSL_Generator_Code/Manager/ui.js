@@ -44,6 +44,15 @@ export async function initUI() {
         updateGLSLPreview();
     });
 
+    // Environment
+    const envLight  = document.getElementById("env-light");
+    const envFill   = document.getElementById("env-fill");
+    const envGround = document.getElementById("env-ground");
+
+    [envLight, envFill, envGround].forEach(input => {
+        input.addEventListener("input", () => requestEnvUpdate());
+    });
+
 
     // Code preview
     glslBlocks.forEach(block => {
@@ -179,10 +188,17 @@ document.addEventListener("mouseup", () => {
     Initialisation
    ---------------------- */
 const categories = {
-    metal: ["bronze", "silver", "gold" ],
+    metal: ["bronze", "steel", "gold" ],
     wood: ["woodPlank"],
     cloth: ["wovenFabric"],
     test: ["noiseTest", "voronoiTest", "waveTest", "magicTest"],
+};
+
+const defaultModelByCategory = {
+    metal: "Gear",
+    wood: "Rock",
+    cloth: "Cloth",
+    test: "cube"
 };
 
 // Add Listener for dynamic selection
@@ -212,6 +228,20 @@ function updateSubcategoryOptions(category) {
     if (subSelect.options.length > 0) subSelect.value = subSelect.options[0].value;
 }
 
+function applyDefaultModel() {
+    const modelSelect = document.getElementById("model-select");
+    const defaultModel = defaultModelByCategory[categorySelect.value];
+    if (defaultModel) {
+        modelSelect.value = defaultModel;
+        if (["cube", "sphere", "torus", "cylinder"].includes(defaultModel)) {
+            createMesh(defaultModel);
+        } else {
+            loadModel(`/Models/${defaultModel}.glb`);
+        }
+        updateGLSLPreview();
+    }
+}
+
 export async function initShader() {
     updateSubcategoryOptions(categorySelect.value);
 
@@ -224,6 +254,7 @@ export async function initShader() {
     try {
         await createShaderFromGraph();
         console.log("Shader initialization successful!");
+        applyDefaultModel();;
     } catch (err) {
         console.error("Error shader intialization :", err);
     }
@@ -232,6 +263,29 @@ export async function initShader() {
 /* ----------------------
     Dynamic slection
    ---------------------- */
+
+// Adapt the model with the category
+categorySelect.addEventListener("change", async () => {
+    // Met à jour les sous-catégories
+    updateSubcategoryOptions(categorySelect.value);
+    updateMaterialType();
+
+    // Change automatiquement le modèle si un par défaut existe
+    const modelSelect = document.getElementById("model-select");
+    const defaultModel = defaultModelByCategory[categorySelect.value];
+    if (defaultModel) {
+        modelSelect.value = defaultModel;
+        // Crée le mesh ou charge le modèle
+        if (["cube", "sphere", "torus", "cylinder"].includes(defaultModel)) {
+            createMesh(defaultModel);
+        } else {
+            loadModel(`/Models/${defaultModel}.glb`);
+        }
+        updateGLSLPreview();
+    }
+});
+
+
 async function updateMaterialType(){
 
     currentGraphName = `${categorySelect.value}_${subSelect.value}`;
@@ -240,9 +294,26 @@ async function updateMaterialType(){
     updateGLSLPreview();
 }
 
+/* ----------------------
+    Light
+   ---------------------- */
+
 export function getAmbientInputColor() {
     const ambientInput = document.getElementById("ambient-color");
     if (!ambientInput) return new THREE.Color(0.3, 0.3, 0.3);
     return new THREE.Color(ambientInput.value);
 
+}
+
+export function getEnvColors() {
+    const toVec3 = (id, fallback) => {
+        const el = document.getElementById(id);
+        if (!el) return fallback;
+        return new THREE.Color(el.value);
+    };
+    return {
+        envLight:  toVec3("env-light",  new THREE.Color(1, 1, 1)),
+        envFill:   toVec3("env-fill",   new THREE.Color(0.6, 0.6, 0.65)),
+        envGround: toVec3("env-ground", new THREE.Color(0.1, 0.1, 0.1)),
+    };
 }

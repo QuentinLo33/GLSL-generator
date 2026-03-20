@@ -9,6 +9,9 @@ export let scene, camera, renderer, mesh, currentModel, ambientLight, updateAmbi
 let resizeRequested = false;
 let containerRef;
 
+export let updateEnv = false;
+export function requestEnvUpdate() { updateEnv = true; }
+
 /* ----------------------
     Scene + renderer
    ---------------------- */
@@ -78,6 +81,14 @@ function animate() {
         updateAmbient = false;
     }
 
+    if (updateEnv && mesh && mesh.material && mesh.material.uniforms) {
+        const { envLight, envFill, envGround } = getEnvColors();
+        mesh.material.uniforms.uEnvLight.value.copy(envLight);
+        mesh.material.uniforms.uEnvFill.value.copy(envFill);
+        mesh.material.uniforms.uEnvGround.value.copy(envGround);
+        updateEnv = false;
+    }
+    
     if (helperRenderer && viewHelper && helperCamera) renderViewHelper();
     renderer.render(scene, camera);
 }
@@ -144,29 +155,54 @@ export function loadModel(url) {
     loader.load(
         url,
         (gltf) => {
-            // remove previous
+            // remove the previous
             if (currentModel) {
                 scene.remove(currentModel);
                 if (currentModel.geometry) currentModel.geometry.dispose();
                 if (currentModel.material) currentModel.material.dispose();
             }
 
+            // url with name
+            const modelName = url.split("/").pop().replace(".glb", "").replace(".gltf", "").toLowerCase();
+
             currentModel = gltf.scene;
-        
-            // apply to all children
-        currentModel.traverse((child) => {
-        if (child.isMesh) {
 
-            mesh = child;
-            currentModel = child;
+            currentModel.traverse((child) => {
+                if (child.isMesh) {
+                    mesh = child;
+                    currentModel = child;
+                    createShaderFromGraph();
+                }
+            });
 
-            createShaderFromGraph();
-        }
-    });
-            // add model
             scene.add(currentModel);
-            currentModel.position.set(0, -0.5, 0);
-            currentModel.scale.set(2, 2, 2);
+
+            // position
+            switch (modelName) {
+                case "teapot":
+                    currentModel.position.set(0, -0.5, 0);
+                    currentModel.scale.set(2, 2, 2);
+                    break;
+                case "suzanne":
+                    currentModel.position.set(0, 0, 0);
+                    currentModel.scale.set(1.5, 1.5, 1.5);
+                    break;
+                case "rock":
+                    currentModel.position.set(0, -0.3, 0);
+                    currentModel.scale.set(2, 2, 2);
+                    break;
+                case "cloth":
+                    currentModel.position.set(0, -1, 0);
+                    currentModel.scale.set(2, 2, 2);
+                    break;
+                case "gear":
+                    currentModel.position.set(0, 0, 0);
+                    currentModel.scale.set(2, 2, 2);
+                    break;
+                default:
+                    currentModel.position.set(0, -0.5, 0);
+                    currentModel.scale.set(2, 2, 2);
+            }
         },
         undefined,
         (err) => console.error(err)
