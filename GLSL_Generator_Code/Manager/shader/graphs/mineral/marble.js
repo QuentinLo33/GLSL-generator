@@ -76,7 +76,7 @@ export function getGraph() {
     // ColorRamp marbre
     const colorRamp = new ColorRampBlock("colorRamp", {
         input: "voronoi.r",
-    positions: [0.0, 0.12, 0.3, 0.6, 1.0],
+        positions: [0.0, 0.12, 0.3, 0.6, 1.0],
         colors: [
             [25,  80,  70],    // ← plus sombre pour les taches
             [55,  130, 115],   // vert moyen

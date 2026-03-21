@@ -2,6 +2,24 @@ import * as THREE from "three";
 import { getAmbientInputColor, getEnvColors } from "../ui";
 import { NoiseBlock } from "./blocks/patterns/noise";
 
+// Ajoute cette fonction helper en haut de ShaderGraph.js
+function hexToVec3(hex) {
+    // Accepte #RGB, #RRGGBB, #RRGGBBAA
+    hex = hex.replace("#", "");
+    if (hex.length === 3) hex = hex.split("").map(c => c+c).join("");
+    if (hex.length === 8) hex = hex.slice(0, 6); // ignore alpha
+    const r = (parseInt(hex.slice(0,2), 16) / 255).toFixed(3);
+    const g = (parseInt(hex.slice(2,4), 16) / 255).toFixed(3);
+    const b = (parseInt(hex.slice(4,6), 16) / 255).toFixed(3);
+    return `vec3(${r}, ${g}, ${b})`;
+}
+
+function resolveConnection(value) {
+    if (typeof value === "number") return value.toFixed(3);
+    if (typeof value === "string" && value.startsWith("#")) return hexToVec3(value);
+    return value; // nom de variable GLSL, laisse tel quel
+}
+
 export let vertexShader="";
 export let fragmentShader="";
 
@@ -76,11 +94,10 @@ export class ShaderGraph {
 
         if (connectionBlock) {
             const connections = connectionBlock.connections || {};
-            const colorVar = connections.color || "vec3(1.0)";
-            const bumpVar  = connections.bump   || "vec3(0.0)";
-
-            const roughnessRaw = connections.roughness || "0.5";
-            const metallicRaw  = connections.metallic  || "0.0";
+            const colorVar     = resolveConnection(connections.color     || "vec3(1.0)");
+            const bumpVar      = resolveConnection(connections.bump      || "vec3(0.0)");
+            const roughnessRaw = resolveConnection(connections.roughness || "0.5");
+            const metallicRaw  = resolveConnection(connections.metallic  || "0.0");
 
             const isNumber = (v) => !isNaN(parseFloat(v)) && isFinite(v);
             const roughnessVar = isNumber(roughnessRaw) ? roughnessRaw : roughnessRaw + ".r";
