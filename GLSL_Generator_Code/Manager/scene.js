@@ -188,7 +188,7 @@ export function loadModel(url) {
                     currentModel.scale.set(2, 2, 2);
                     break;
                 case "suzanne":
-                    currentModel.position.set(0, 0, 0);
+                    currentModel.position.set(0, -0.8, 0);
                     currentModel.scale.set(1.5, 1.5, 1.5);
                     break;
                 case "rock":

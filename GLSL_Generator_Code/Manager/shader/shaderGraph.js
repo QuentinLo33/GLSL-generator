@@ -16,10 +16,38 @@ export class ShaderGraph {
         let mainCode = "";
 
         const globalsSet = new Set();
-
         let connectionBlock = null;
         let noiseBlock = false;
 
+        // ── Vérifie si un block a besoin de snoise ────────────────────────────
+        const needsSnoiseBlocks = ["WaveBlock", "WoodGrainBlock"];
+        const hasBlockNeedingSnoise = this.blocks.some(b => 
+            needsSnoiseBlocks.includes(b.constructor.name)
+        );
+        const hasNoiseBlock = this.blocks.some(b => 
+            b.constructor.name === "NoiseBlock"
+        );
+
+        // Si un WaveBlock ou WoodGrainBlock existe sans NoiseBlock avant lui,
+        // on injecte le globals noise EN PREMIER
+        if (hasBlockNeedingSnoise && !hasNoiseBlock) {
+            const tmpNoise = new NoiseBlock("_tmp", { normalized: false });
+            const tmpCode = tmpNoise.generateCode().globals;
+            globalsSet.add(tmpCode);
+            globals += tmpCode + "\n";
+            noiseBlock = true;
+        } else if (hasBlockNeedingSnoise) {
+            // Il y a un NoiseBlock mais peut-être APRÈS — on force le globals noise en premier
+            const firstNoise = this.blocks.find(b => b.constructor.name === "NoiseBlock");
+            if (firstNoise) {
+                const noiseCode = firstNoise.generateCode().globals;
+                globalsSet.add(noiseCode);
+                globals += noiseCode + "\n";
+                noiseBlock = true;
+            }
+        }
+
+        // ── Boucle normale ────────────────────────────────────────────────────
         for (const block of this.blocks) {
             const code = block.generateCode();
 
@@ -36,10 +64,15 @@ export class ShaderGraph {
             if (block.constructor.name === "NoiseBlock") noiseBlock = true;
         }
 
-        if (mainCode.includes("snoise") && noiseBlock == false) {
+        // ── Fallback existant — garde le au cas où ────────────────────────────
+        if (mainCode.includes("snoise") && !noiseBlock) {
             const tmpNoise = new NoiseBlock("_tmp", { normalized: false });
-            globals += tmpNoise.generateCode().globals + "\n";
+            const tmpCode = tmpNoise.generateCode().globals;
+            if (!globalsSet.has(tmpCode)) {
+                globals = tmpCode + "\n" + globals; // ← prepend, pas append
+            }
         }
+
 
         if (connectionBlock) {
             const connections = connectionBlock.connections || {};

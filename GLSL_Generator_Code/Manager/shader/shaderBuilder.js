@@ -11,6 +11,9 @@ const graphs = {
     "cloth_wovenFabric": () => import ("./graphs/cloth/wovenFabric.js"),
     "cloth_militaryFabric": () => import ("./graphs/cloth/militaryFabric.js"),
 
+    // mineral
+    "mineral_marble": () => import ("./graphs/mineral/marble.js"),
+    "mineral_granite": () => import ("./graphs/mineral/granite.js"),
     //test
     "test_noiseTest": () => import("./graphs/test/noiseTest.js"),
     "test_voronoiTest": () => import("./graphs/test/voronoiTest.js"),
