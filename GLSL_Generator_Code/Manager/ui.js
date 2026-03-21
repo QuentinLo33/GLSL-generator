@@ -202,7 +202,7 @@ const categories = {
     metal: ["bronze", "steel"],
     wood: ["woodPlank"],
     cloth: ["wovenFabric", "militaryFabric"],
-    mineral: ["marble", "granite"],
+    mineral: ["marble", "granite", "polishedStone"],
     synthetic: ["rubber"],
 
     test: ["noiseTest", "voronoiTest", "waveTest", "magicTest"],
@@ -223,6 +223,7 @@ const defaultModelByMaterial = {
     // mineral
     "mineral_marble":   "Teapot",
     "mineral_granite":  "Suzanne",
+    "mineral_polishedStone":  "Suzanne",
 
     // synthetic
     "synthetic_rubber": "torus",
