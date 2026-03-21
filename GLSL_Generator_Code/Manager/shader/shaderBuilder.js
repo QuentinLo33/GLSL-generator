@@ -14,9 +14,11 @@ const graphs = {
     // mineral
     "mineral_marble": () => import ("./graphs/mineral/marble.js"),
     "mineral_granite": () => import ("./graphs/mineral/granite.js"),
+    "mineral_polishedStone": () => import ("./graphs/mineral/polishedStone.js"),
 
     // 
     "synthetic_rubber": () => import ("./graphs/synthetic/rubber.js"),
+    
     //test
     "test_noiseTest": () => import("./graphs/test/noiseTest.js"),
     "test_voronoiTest": () => import("./graphs/test/voronoiTest.js"),
