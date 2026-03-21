@@ -3,12 +3,14 @@ import { ShaderGraph } from "./shaderGraph.js";
 const graphs = {
     // metal
     "metal_bronze": () => import("./graphs/metal/bronze.js"),
-    "metal_silver": () => import("./graphs/metal/silver.js"),
+    "metal_steel": () => import("./graphs/metal/steel.js"),
     // wood
     "wood_woodPlank": () => import("./graphs/wood/woodPlank.js"),
 
     // cloth
     "cloth_wovenFabric": () => import ("./graphs/cloth/wovenFabric.js"),
+    "cloth_militaryFabric": () => import ("./graphs/cloth/militaryFabric.js"),
+
     //test
     "test_noiseTest": () => import("./graphs/test/noiseTest.js"),
     "test_voronoiTest": () => import("./graphs/test/voronoiTest.js"),

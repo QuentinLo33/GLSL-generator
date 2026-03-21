@@ -72,15 +72,6 @@ export function getGraph() {
         factor: 0.5
     });
 
-    // 6. Remap pour roughness
-    const roughnessMap = new MapRange("roughnessMap", {
-        input: "mixWave.r",
-        fromMin: -1,
-        fromMax: 1,
-        toMin: 0.2,
-        toMax: 0.8
-    });
-
     const waveRemap = new MapRange("waveRemap", {
     input: "mixWave.r",
     fromMin: 0.3,  // ← coupe les valeurs basses
@@ -102,18 +93,27 @@ export function getGraph() {
         mode: "linear"
     });
     
-    // 8. Bump subtil pour relief
-    const bump = new BumpMultiplierBlock("bump", {
-        input: "mixWave",
-        factor: 0.05
+    // 6. Remap pour roughness
+    const roughnessFinal = new MapRange("roughnessFinal", {
+        input: "waveRemap.r",
+        fromMin: 0.0,
+        fromMax: 1.0,
+        toMin: 0.75,   // intersections = très rough
+        toMax: 0.45,   // fils = rough aussi mais moins
+        mode: "linear"
     });
 
-    // 9. Output final
+    // Bump plus doux
+    const bump = new BumpMultiplierBlock("bump", {
+        input: "mixWave",
+        factor: 0.15  // réduis si les dents de scie persistent
+    });
+
     const output = new ConnectionBlock("output", {
         color: "colorRamp",
-        roughness: "colorRamp",
-        metal: 0,
-        bump: "colorRamp"
+        roughness: "roughnessFinal",
+        metallic: "0.0",
+        bump: "bump"
     });
 
     return [
@@ -123,9 +123,9 @@ export function getGraph() {
         wave1,
         wave2,
         mixWave,
-        roughnessMap,
         waveRemap,
         colorRamp,
+        roughnessFinal,
         bump,
         output
     ];
