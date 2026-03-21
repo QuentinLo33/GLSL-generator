@@ -9,85 +9,118 @@ import { BumpMultiplierBlock } from "../../blocks/operators/bumpMultiplier.js";
 
 export function getGraph() {
 
-    const mapping1 = new MappingBlock("mapping1", {
-        scale: [1.3, 1.3, 1.3],  // était 0.8
-        offset: [0, 0, 0], rotation: [0, 0, 0], mode: "local"
+    const mappingBase = new MappingBlock("mappingBase", {
+        scale: [3, 3, 3],
+        offset: [0, 0, 0],
+        rotation: [0, 0, 0],
+        mode: "local"
     });
 
-    const noise1 = new NoiseBlock("noise1", {
-        input: "mapping1",
-        scale: 2.5,   // était 1.5
-        detail: 4,    // était 3 → un peu plus de détail
-        roughness: 0.55,
+    // Noise A — grandes taches
+    const noiseA = new NoiseBlock("noiseA", {
+        input: "mappingBase",
+        scale: 4.0,
+        detail: 16,
+        roughness: 0.5,  // ← corrigé
         lacunarity: 2.0,
         distortion: 0.0,
-        normalized: true
+        normalized: true,
+        mode: "fBm"
     });
 
-    const colorBronze = new ColorRampBlock("colorBronze", {
-        input: "noise1.r",
-        positions: [0, 0.3, 0.6, 1.0],
-        colors: [
-            [120, 60,  15],   // creux très sombres — brun cuivre foncé
-            [185, 105, 38],   // bronze foncé
-            [215, 140, 55],   // bronze moyen
-            [235, 168, 68],   // or-bronze (pas trop jaune)
-        ],
-        mode: "smooth"
+    // Noise B — taches moyennes
+    const noiseB = new NoiseBlock("noiseB", {
+        input: "mappingBase",
+        scale: 8.0,
+        detail: 16,
+        roughness: 0.5,  // ← corrigé
+        lacunarity: 2.0,
+        distortion: 0.0,
+        normalized: true,
+        mode: "fBm"
     });
 
-    const roughness = new MapRange("roughness", {
-        input: "noise1.r",
-        fromMin: 0, fromMax: 1,
-        toMin: 0.05,   // très poli → highlights larges
-        toMax: 0.25,
+    // Noise C — micro taches / mica
+    const noiseC = new NoiseBlock("noiseC", {
+        input: "mappingBase",
+        scale: 8.0,
+        detail: 16,
+        roughness: 0.5,  // ← corrigé
+        lacunarity: 2.0,
+        distortion: 0.0,
+        normalized: true,
+        mode: "fBm"
+    });
+
+    const mixAB = new MixBlock("mixAB", {
+        inputA: "noiseA",
+        inputB: "noiseB",
+        mode: "darken",
+        factor: 1.0
+    });
+
+    const mixFinal = new MixBlock("mixFinal", {
+        inputA: "mixAB",
+        inputB: "noiseC",
+        mode: "lighten",
+        factor: 1.0
+    });
+
+// Remap agressif AVANT la ColorRamp — crée un seuil dur
+const remapA = new MapRange("remapA", {
+    input: "mixFinal.r",
+    fromMin: 0.25,   // ← zone très étroite = seuil dur
+    fromMax: 0.55,
+    toMin: 0.0,
+    toMax: 1.0,
+    mode: "smoothstep"
+});
+
+// ColorRamp LINEAR avec seulement 2-3 couleurs
+const colorRamp = new ColorRampBlock("colorRamp", {
+    input: "remapA.r",
+    positions: [0.0, 0.01, 1.0],
+    colors: [
+        [20,  15,  12],    // noir — taches
+        [185, 135, 105],   // beige rosé ← fond
+        [230, 200, 175],   // blanc rosé
+    ],
+    mode: "linear"         // ← linear pas constant
+});
+
+    // Granite poli = assez lisse
+    const roughnessFinal = new MapRange("roughnessFinal", {
+        input: "mixFinal.r",
+        fromMin: 0.0,
+        fromMax: 1.0,
+        toMin: 0.45,
+        toMax: 0.3,
         mode: "linear"
     });
 
     const bump = new BumpMultiplierBlock("bump", {
-        input: "noise1",
-        factor: 0.08   // bump très léger
-    });
-
-    // Rajoute dans bronze.js
-    const noiseOxide = new NoiseBlock("noiseOxide", {
-        input: "mapping1",
-        scale: 1.8,  // était 1.0
-        detail: 2, roughness: 0.5,
-        lacunarity: 2.0, distortion: 0.0, normalized: true
-    });
-
-    const oxideRemap = new MapRange("oxideRemap", {
-        input: "noiseOxide.r",
-        fromMin: 0.6, fromMax: 1.0,  // patine seulement au-dessus de 0.6
-        toMin: 0.0,   toMax: 0.3,    // max 30% de patine
-        mode: "smoothstep"
-    });
-
-    const colorOxide = new ColorRampBlock("colorOxide", {
-        input: "noiseOxide.r",
-        positions: [0, 0.5, 1.0],
-        colors: [
-            [185, 105, 38],
-            [110, 130, 70],   // vert discret
-            [85,  110, 88],
-        ],
-        mode: "smooth"
-    });
-
-    const mixFinal = new MixBlock("mixFinal", {
-        inputA: "colorBronze",
-        inputB: "colorOxide",
-        factor: "oxideRemap.r",
-        mode: "mix"
+        input: "mixFinal",
+        factor: 0.2
     });
 
     const output = new ConnectionBlock("output", {
-        color: "mixFinal",
-        roughness: "roughness",
-        bump: "bump",
-        metallic: 0.98
+        color: "colorRamp",
+        roughness: "roughnessFinal",
+        metallic: "0.0",
+        bump: "bump"
     });
 
-return [mapping1, noise1, colorBronze, roughness, bump, noiseOxide, oxideRemap, colorOxide, mixFinal, output];
+    return [
+        mappingBase,
+        noiseA,
+        noiseB,
+        noiseC,
+        mixAB,
+        mixFinal,
+        remapA,
+        colorRamp,
+        roughnessFinal,
+        bump,
+        output
+    ];
 }

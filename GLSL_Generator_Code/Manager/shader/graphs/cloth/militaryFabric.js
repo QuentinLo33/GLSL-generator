@@ -84,57 +84,57 @@ export function getGraph() {
 
     // ── Camo pattern ──────────────────────────────────────────────────────────
 
-   // Mapping plus petit = taches plus grandes
-const mappingLocal = new MappingBlock("mappingLocal", {
-    scale: [4, 4, 4],  // ← était 4,4,4 — beaucoup plus grand
-    offset: [0, 0, 0],
-    rotation: [0, 0, 0],
-    mode: "local"
-});
+    // Mapping plus petit = taches plus grandes
+    const mappingLocal = new MappingBlock("mappingLocal", {
+        scale: [4, 4, 4],  // ← était 4,4,4 — beaucoup plus grand
+        offset: [0, 0, 0],
+        rotation: [0, 0, 0],
+        mode: "local"
+    });
 
-const noiseCamo1 = new NoiseBlock("noiseCamo1", {
-    input: "mappingLocal",
-    scale: 1.0,
-    detail: 3,        // ← peu de détail = formes larges et fluides
-    roughness: 0.5,
-    lacunarity: 2.0,
-    distortion: 0.5,  // ← distortion faible
-    normalized: true,
-    mode: "fBm"
-});
+    const noiseCamo1 = new NoiseBlock("noiseCamo1", {
+        input: "mappingLocal",
+        scale: 1.0,
+        detail: 3,        // ← peu de détail = formes larges et fluides
+        roughness: 0.5,
+        lacunarity: 2.0,
+        distortion: 0.5,  // ← distortion faible
+        normalized: true,
+        mode: "fBm"
+    });
 
-// Deuxième noise juste pour les petits détails des bords
-const noiseCamo2 = new NoiseBlock("noiseCamo2", {
-    input: "mappingLocal",
-    scale: 3.0,
-    detail: 2,
-    roughness: 0.5,
-    lacunarity: 2.0,
-    distortion: 0.3,
-    normalized: true,
-    mode: "fBm"
-});
+    // Deuxième noise juste pour les petits détails des bords
+    const noiseCamo2 = new NoiseBlock("noiseCamo2", {
+        input: "mappingLocal",
+        scale: 3.0,
+        detail: 2,
+        roughness: 0.5,
+        lacunarity: 2.0,
+        distortion: 0.3,
+        normalized: true,
+        mode: "fBm"
+    });
 
-// Mix très léger — noiseCamo1 domine largement
-const mixCamo = new MixBlock("mixCamo", {
-    inputA: "noiseCamo1",
-    inputB: "noiseCamo2",
-    mode: "mix",
-    factor: 0.15   // ← 15% seulement de noiseCamo2
-});
+    // Mix très léger — noiseCamo1 domine largement
+    const mixCamo = new MixBlock("mixCamo", {
+        inputA: "noiseCamo1",
+        inputB: "noiseCamo2",
+        mode: "mix",
+        factor: 0.15   // ← 15% seulement de noiseCamo2
+    });
 
-// 4 bandes bien distinctes comme la référence
-const colorRamp = new ColorRampBlock("colorRamp", {
-    input: "mixCamo.r",
-    positions: [0.0, 0.4, 0.6, 1.0],
-    colors: [
-        [20,  50,  20],    // vert très foncé
-        [55,  90,  35],    // vert moyen
-        [80,  60,  30],    // brun
-        [20,  50,  20],    // retour vert foncé
-    ],
-    mode: "constant"
-});
+    // 4 bandes bien distinctes comme la référence
+    const colorRamp = new ColorRampBlock("colorRamp", {
+        input: "mixCamo.r",
+        positions: [0.0, 0.4, 0.6, 1.0],
+        colors: [
+            [20,  50,  20],    // vert très foncé
+            [55,  90,  35],    // vert moyen
+            [80,  60,  30],    // brun
+            [20,  50,  20],    // retour vert foncé
+        ],
+        mode: "constant"
+    });
 
 
     // ── Roughness & Bump ──────────────────────────────────────────────────────
