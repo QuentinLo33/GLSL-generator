@@ -16,9 +16,6 @@ body {
     color: #eee;
 }
 
-
-
-
 /* ---------------------------
    Left part: Shader selection
    --------------------------- */ 
@@ -272,4 +269,54 @@ body {
 
 #resizer-horizontal:hover {
     background: #61afff;
+}
+
+
+/* ---------------------------
+   Environment Relfection
+   --------------------------- */
+
+/* Toggle "Environment Reflection" */
+.settings-environment {
+    display: flex;
+    align-items: center;
+    margin-top: 16px;
+}
+
+.toggle-environment {
+    width: 100%;
+    background: #2b2b2b;
+    color: #eee;
+    border: none;
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    text-align: left;
+    transition: 0.2s;
+    position: relative;
+}
+
+.toggle-environment:hover {
+    background: #61afff;
+    color: #111;
+}
+
+/* arrow */
+.toggle-environment:after {
+    content: "▸";
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    transition: transform 0.2s ease;
+}
+
+.toggle-environment.active::after {
+    transform: translateY(-50%) rotate(90deg);
+}
+
+.environment-content {
+    margin-top: 8px;
 }

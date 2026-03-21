@@ -53,14 +53,21 @@
             <label>Ambient</label>
             <input type="color" id="ambient-color" value="#333333">
 
-            <label>Top</label>
-            <input type="color" id="env-light" value="#ffffff">
-            
-            <label>Top</label>
-            <input type="color" id="env-fill" value="#999aa6">
-            
-            <label>Top</label>
-            <input type="color" id="env-ground" value="#1a1a1a">
+            <div class="settings-block">
+                <div class="settings-environment">
+                    <button class="toggle-environment">Environment Reflection</button>
+                </div>
+                <div class="environment-content">
+                    <label>Direct</label>
+                    <input type="color" id="env-light" value="#ffffff">
+
+                    <label>Fill</label>
+                    <input type="color" id="env-fill" value="#999aa6">
+
+                    <label>Ground</label>
+                    <input type="color" id="env-ground" value="#1a1a1a">
+                </div>
+            </div>
         </div>
     </div>
 
