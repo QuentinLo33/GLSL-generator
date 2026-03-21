@@ -70,11 +70,6 @@ export class ShaderGraph {
     `;
         }
 
-        // Vertex shader
-        // - vWorldPosition : position en world space pour le lighting
-        // - vNormal        : normale en world space (via normalMatrix de THREE = transpose inverse de modelViewMatrix)
-        //                    on utilise normalMatrix qui est déjà calculé correctement par THREE
-        // - vPosition      : position locale pour les patterns procéduraux
         vertexShader = `
 // ==================
 // Vertex Shader
@@ -84,18 +79,22 @@ varying vec3 vNormal;
 varying vec3 vPosition;
 varying vec2 vUv;
 varying vec3 vWorldPosition;
+varying vec3 vViewPosition;
 
 void main() {
-    vWorldPosition = (modelMatrix * vec4(position, 1.0)).xyz;
+    vec4 worldPos = modelMatrix * vec4(position, 1.0);
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
 
-    // normalMatrix de THREE = transpose(inverse(modelViewMatrix))
-    // On veut world space → on recalcule manuellement
-    vNormal = normalize(mat3(modelMatrix) * normal);
+    vWorldPosition = worldPos.xyz;
+    vViewPosition = mvPosition.xyz;
+    vNormal = normalize(normalMatrix * normal);
 
     vPosition = position;
     vUv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+
+    gl_Position = projectionMatrix * mvPosition;
 }
+
         `;
 
         fragmentShader = `
@@ -108,6 +107,7 @@ varying vec3 vNormal;
 varying vec3 vPosition;
 varying vec2 vUv;
 varying vec3 vWorldPosition;
+varying vec3 vViewPosition;
 
 uniform vec3 uLightColor;
 uniform vec3 uLightPos;
@@ -125,11 +125,18 @@ void main() {
 
 ${mainCode}
 
-    vec3 N = normalize(vNormal + finalBump * 0.15);
-    vec3 V = normalize(uCameraPos - vWorldPosition);
-    vec3 L = normalize(uLightPos - vWorldPosition);
-    vec3 H = normalize(L + V);
-    vec3 R = reflect(-V, N);  // direction de réflexion
+    vec3 N;
+    #ifdef USE_UV_MAPPING
+        N = normalize(vNormal + finalBump * 0.15);
+    #else
+        N = normalize(vNormal + finalBump * 0.15);
+    #endif
+
+    vec3 V = normalize(-vViewPosition); // direction vers la caméra
+    vec3 lightPosView = (viewMatrix * vec4(uLightPos, 1.0)).xyz;
+    vec3 L = normalize(lightPosView - vViewPosition); // direction towards the light
+    vec3 H = normalize(L + V); 
+    vec3 R = reflect(-V, N);
 
     float NdotL = max(dot(N, L), 0.0);
     float NdotH = max(dot(N, H), 0.0);
@@ -145,8 +152,8 @@ ${mainCode}
     vec3 envGround = uEnvGround;
 
     // Mix with reflection
-    float upness    = R.y * 0.5 + 0.5;          // 0 = bas, 1 = haut
-    float sideness  = abs(R.x) * 0.5 + 0.5;    // bords latéraux
+    float upness    = R.y * 0.5 + 0.5;          // 0 = down, 1 = up
+    float sideness  = abs(R.x) * 0.5 + 0.5;    // side
 
     vec3 envColor = mix(envGround, envLight, upness);
     envColor      = mix(envColor,  envFill,  sideness * (1.0 - upness));

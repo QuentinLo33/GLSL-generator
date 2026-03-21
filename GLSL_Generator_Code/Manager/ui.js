@@ -1,4 +1,4 @@
-import { scene, createMesh, loadModel, currentModel, ambientLight, requestAmbientUpdate, createShaderFromGraph } from "./scene.js";
+import { scene, createMesh, loadModel, currentModel, ambientLight, requestAmbientUpdate, requestEnvUpdate, createShaderFromGraph } from "./scene.js";
 import * as THREE from "three";
 import { getVertexShader, getFragmentShader, vertexShader } from "./shader/shaderGraph.js";
 
