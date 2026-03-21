@@ -53,6 +53,17 @@ export async function initUI() {
         input.addEventListener("input", () => requestEnvUpdate());
     });
 
+    // toogle
+    document.querySelectorAll(".toggle-environment").forEach(toggle => {
+        const content = toggle.closest(".settings-block").querySelector(".environment-content");
+        content.style.display = "none";
+
+        toggle.addEventListener("click", () => {
+            const visible = content.style.display !== "none";
+            content.style.display = visible ? "none" : "block";
+            toggle.classList.toggle("active", !visible);
+        });
+    });
 
     // Code preview
     glslBlocks.forEach(block => {

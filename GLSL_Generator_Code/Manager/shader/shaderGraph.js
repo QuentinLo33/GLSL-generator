@@ -181,7 +181,7 @@ ${mainCode}
             uniforms: {
                 uLightColor:  { value: new THREE.Color(1, 1, 1) },
                 uLightPos:    { value: new THREE.Vector3(3, 3, 2) },
-                uCameraPos:   { value: camera.position.clone() }, // clone pour éviter référence partagée
+                uCameraPos:   { value: camera.position.clone() }, // clone to avoid issue with reference
                 uAmbientColor:{ value: getAmbientInputColor() },
                 uEnvLight:  { value: envLight.clone() },
                 uEnvFill:   { value: envFill.clone() },
