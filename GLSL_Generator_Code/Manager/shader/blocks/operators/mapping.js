@@ -18,10 +18,10 @@ export class MappingBlock {
         const [rx, ry, rz] = this.rotation.map(v => v.toFixed(4));
 
         const rotationCode = `
-    mat3 rotX = mat3(1.0,0.0,0.0, 0.0,cos(${rx}),-sin(${rx}), 0.0,sin(${rx}),cos(${rx}));
-    mat3 rotY = mat3(cos(${ry}),0.0,sin(${ry}), 0.0,1.0,0.0, -sin(${ry}),0.0,cos(${ry}));
-    mat3 rotZ = mat3(cos(${rz}),-sin(${rz}),0.0, sin(${rz}),cos(${rz}),0.0, 0.0,0.0,1.0);
-    mat3 rotMat_${this.name} = rotZ * rotY * rotX;`;
+    mat3 rotX_${this.name} = mat3(1.0,0.0,0.0, 0.0,cos(${rx}),-sin(${rx}), 0.0,sin(${rx}),cos(${rx}));
+    mat3 rotY_${this.name} = mat3(cos(${ry}),0.0,sin(${ry}), 0.0,1.0,0.0, -sin(${ry}),0.0,cos(${ry}));
+    mat3 rotZ_${this.name} = mat3(cos(${rz}),-sin(${rz}),0.0, sin(${rz}),cos(${rz}),0.0, 0.0,0.0,1.0);
+    mat3 rotMat_${this.name} = rotZ_${this.name} * rotY_${this.name} * rotX_${this.name};`;
 
         // UV — suit les UV du mesh, idéal pour models importés
         if (this.mode === "uv") {

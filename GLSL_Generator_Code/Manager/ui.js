@@ -201,7 +201,7 @@ document.addEventListener("mouseup", () => {
 const categories = {
     metal: ["bronze", "steel", "gold" ],
     wood: ["woodPlank"],
-    cloth: ["wovenFabric"],
+    cloth: ["wovenFabric", "militaryFabric"],
     test: ["noiseTest", "voronoiTest", "waveTest", "magicTest"],
 };
 
