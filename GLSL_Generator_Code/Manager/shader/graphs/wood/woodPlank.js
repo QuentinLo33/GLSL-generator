@@ -1,82 +1,129 @@
 import { MappingBlock } from "../../blocks/operators/mapping.js";
 import { ConnectionBlock } from "../../blocks/operators/connection.js";
-
 import { NoiseBlock } from "../../blocks/patterns/noise.js";
 import { VoronoiBlock } from "../../blocks/patterns/voronoi.js";
 import { ColorRampBlock } from "../../blocks/operators/colorRamp.js";
 import { MixBlock } from "../../blocks/operators/mix.js";
 import { MapRange } from "../../blocks/operators/mapRange.js";
+import { BumpMultiplierBlock } from "../../blocks/operators/bumpMultiplier.js";
+
+import { WoodGrainBlock } from "../../blocks/patterns/woodGrain.js";
 
 export function getGraph() {
-    // 1. Mapping
-    const mapping1 = new MappingBlock("mapping1", {
-        scale: [1, 0.1, 1],
+
+    const mappingGrain = new MappingBlock("mappingGrain", {
+        scale: [1, 2, 1],   // ← plus étiré en Y = lignes plus longues
         offset: [0, 0, 0],
         rotation: [0, 0, 0],
         mode: "local"
     });
-    
-    const noise1 = new NoiseBlock("noise1", {
-        inputA: "mapping1",
-        scale: 5,        // échelle du bois
-        detail: 12,      // nombre d’octaves pour le grain
+
+    const woodGrain = new WoodGrainBlock("woodGrain", {
+        input: "mappingGrain",
+        scale: 6.0,
+        distortion: 1.5,    // ← plus fort = ondulations plus visibles
+        noiseScale: 0.4     // ← plus petit = ondulations plus larges/douces
+    });
+
+    const woodGrain2 = new WoodGrainBlock("woodGrain2", {
+        input: "mappingGrain",
+        scale: 2.5,
+        distortion: 2.0,
+        noiseScale: 0.25
+    });
+
+    const mixGrain = new MixBlock("mixGrain", {
+        inputA: "woodGrain",
+        inputB: "woodGrain2",
+        mode: "multiply",
+        factor: 0.5
+    });
+
+    // Knots
+    const noiseKnot = new NoiseBlock("noiseKnot", {
+        input: "mappingGrain",
+        scale: 0.8,
+        detail: 2,
         roughness: 0.5,
-        lacunatrity: 2,
-        distortion: 3,   // torsion des anneaux
-        normalized: true
+        lacunarity: 2.0,
+        distortion: 0.0,
+        normalized: false,
+        mode: "fBm"
     });
 
-    const mapRange1 = new MapRange("mapRange1", {
-        input: "noise1.r",
-        fromMin: 0,
-        fromMax: 1,
-        toMin: 0.2,
-        toMax: 1.0,
-        mode: "linear"
-    });
-
-    const voronoi1 = new VoronoiBlock("voronoi1", {
-        input: "mapRange1",
-        scale: 3,
-        detail: 4,
-        roughness: 0.1,      // très doux
+    const voronoiKnot = new VoronoiBlock("voronoiKnot", {
+        input: "noiseKnot",
+        scale: 2.5,
+        detail: 1,
+        roughness: 0.5,
         lacunarity: 2.0,
         randomness: 1.0,
-        mode: "F2",       // pour les bords subtils
+        mode: "F1",
         metric: "euclidean"
     });
-    
-    const mapRange2 = new MapRange("mapRange2", {
-        input: "voronoi1.r",
-        fromMin: 0,
-        fromMax: 0.3,
-        toMin: 0.5,
-        toMax: 1.0,
+
+    const knotRemap = new MapRange("knotRemap", {
+        input: "voronoiKnot.r",
+        fromMin: 0.0,
+        fromMax: 0.2,
+        toMin: 1.0,
+        toMax: 0.0,
+        mode: "smoothstep"
+    });
+
+    const mixFinal = new MixBlock("mixFinal", {
+        inputA: "mixGrain",
+        inputB: "knotRemap",
+        mode: "multiply",
+        factor: 0.4
+    });
+
+    const colorRamp = new ColorRampBlock("colorRamp", {
+        input: "mixFinal.r",
+        positions: [0.2, 0.1, 0.35, 0.65, 1.0],
+        colors: [
+            [140,  80,  25],
+            [150, 90,  35],
+            [205, 148, 62],
+            [232, 195, 115],
+            [222, 185, 105],
+        ],
+        mode: "smooth"
+    });
+
+    const roughnessFinal = new MapRange("roughnessFinal", {
+        input: "mixFinal.r",
+        fromMin: 0.0,
+        fromMax: 1.0,
+        toMin: 0.4,
+        toMax: 0.12,
         mode: "linear"
     });
-    
-    const woodColor = new ColorRampBlock("woodColor",{
-        input:"voronoi1.r",
 
-        positions:[
-            0,
-            0.8,
-            0.805
-        ],
-
-        colors:[
-            [92, 60, 30],       // zone foncée
-            [200, 145, 85],      // zone claire
-            [92, 60, 30],       // zone foncée
-        ],
-
-        mode:"linear"
+    const bump = new BumpMultiplierBlock("bump", {
+        input: "mixFinal",
+        factor: 0.15
     });
+
     const output = new ConnectionBlock("output", {
-        color: "woodColor",
-        roughness: "mapRange1",
-        metal: 0
+        color: "colorRamp",
+        roughness: "roughnessFinal",
+        metallic: "0.0",
+        bump: "bump"
     });
 
-    return [mapping1, noise1, mapRange1, voronoi1, mapRange2, woodColor, output];
+    return [
+        mappingGrain,
+        woodGrain,
+        woodGrain2,
+        mixGrain,
+        noiseKnot,
+        voronoiKnot,
+        knotRemap,
+        mixFinal,
+        colorRamp,
+        roughnessFinal,
+        bump,
+        output
+    ];
 }

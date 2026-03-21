@@ -199,19 +199,35 @@ document.addEventListener("mouseup", () => {
     Initialisation
    ---------------------- */
 const categories = {
-    metal: ["bronze", "steel", "gold" ],
+    metal: ["bronze", "steel"],
     wood: ["woodPlank"],
     cloth: ["wovenFabric", "militaryFabric"],
+    mineral: ["marble", "granite"],
     test: ["noiseTest", "voronoiTest", "waveTest", "magicTest"],
 };
 
-const defaultModelByCategory = {
-    metal: "Gear",
-    wood: "Rock",
-    cloth: "Cloth",
-    test: "cube"
-};
+const defaultModelByMaterial = {
+    // metal
+    "metal_bronze": "Gear",
+    "metal_steel":  "Gear",
+    
+    // wood
+    "wood_woodPlank": "cube",
+    
+    // cloth
+    "cloth_wovenFabric":   "Cloth",
+    "cloth_militaryFabric": "Cloth",
 
+    // mineral
+    "mineral_marble":   "Teapot",
+    "mineral_granite":  "Suzanne",
+
+    // test
+    "test_noiseTest":   "cube",
+    "test_voronoiTest": "cube",
+    "test_waveTest":    "cube",
+    "test_magicTest":   "cube",
+};
 // Add Listener for dynamic selection
 const categorySelect = document.getElementById("material-category");
 const subSelect = document.getElementById("material-subcategory");
@@ -241,16 +257,20 @@ function updateSubcategoryOptions(category) {
 
 function applyDefaultModel() {
     const modelSelect = document.getElementById("model-select");
-    const defaultModel = defaultModelByCategory[categorySelect.value];
-    if (defaultModel) {
-        modelSelect.value = defaultModel;
-        if (["cube", "sphere", "torus", "cylinder"].includes(defaultModel)) {
-            createMesh(defaultModel);
-        } else {
-            loadModel(`/Models/${defaultModel}.glb`);
-        }
-        updateGLSLPreview();
+    const key = `${categorySelect.value}_${subSelect.value}`;
+    const defaultModel = defaultModelByMaterial[key];
+
+    if (!defaultModel) return;
+
+    modelSelect.value = defaultModel;
+
+    if (["cube", "sphere", "torus", "cylinder"].includes(defaultModel)) {
+        createMesh(defaultModel);
+    } else {
+        loadModel(`/Models/${defaultModel}.glb`);
     }
+
+    updateGLSLPreview();
 }
 
 export async function initShader() {
@@ -280,28 +300,14 @@ categorySelect.addEventListener("change", async () => {
     // Met à jour les sous-catégories
     updateSubcategoryOptions(categorySelect.value);
     updateMaterialType();
-
-    // Change automatiquement le modèle si un par défaut existe
-    const modelSelect = document.getElementById("model-select");
-    const defaultModel = defaultModelByCategory[categorySelect.value];
-    if (defaultModel) {
-        modelSelect.value = defaultModel;
-        // Crée le mesh ou charge le modèle
-        if (["cube", "sphere", "torus", "cylinder"].includes(defaultModel)) {
-            createMesh(defaultModel);
-        } else {
-            loadModel(`/Models/${defaultModel}.glb`);
-        }
-        updateGLSLPreview();
-    }
 });
 
 
-async function updateMaterialType(){
-
+async function updateMaterialType() {
     currentGraphName = `${categorySelect.value}_${subSelect.value}`;
     console.log("Selected sub:", subSelect.value, "-> Graph:", currentGraphName);
     await createShaderFromGraph();
+    applyDefaultModel();
     updateGLSLPreview();
 }
 
