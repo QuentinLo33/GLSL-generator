@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"; // camera
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"; // model
-import { currentGraphName } from "./ui.js"; // material selected
+import { currentGraphName, getEnvColors } from "./ui.js";
 import { createShader } from "./shader/shaderBuilder.js"; // shader creation 
 
 
@@ -23,10 +23,11 @@ export function initScene(container) {
     scene.background = new THREE.Color("#d0f3f4");
 
     // light
-    ambientLight = new THREE.AmbientLight(0xffffff, 1);
+    ambientLight = new THREE.AmbientLight(0xaaaaaa, 1);
     updateAmbient =false;
     scene.add(ambientLight);
 
+    updateEnv = false;
     // camera + control
     camera = new THREE.PerspectiveCamera(
         75, // field of view
@@ -71,16 +72,18 @@ function animate() {
         resizeRequested = false;
     }
 
-    // ← ajouter ces lignes
+    // camera
     if (mesh && mesh.material && mesh.material.uniforms) {
         mesh.material.uniforms.uCameraPos.value.copy(camera.position);
     }
 
+    // ambient
     if (updateAmbient && mesh && mesh.material && mesh.material.uniforms) {
         mesh.material.uniforms.uAmbientColor.value.copy(ambientLight.color);
         updateAmbient = false;
     }
 
+    // environment
     if (updateEnv && mesh && mesh.material && mesh.material.uniforms) {
         const { envLight, envFill, envGround } = getEnvColors();
         mesh.material.uniforms.uEnvLight.value.copy(envLight);
@@ -88,7 +91,8 @@ function animate() {
         mesh.material.uniforms.uEnvGround.value.copy(envGround);
         updateEnv = false;
     }
-    
+
+    // helper
     if (helperRenderer && viewHelper && helperCamera) renderViewHelper();
     renderer.render(scene, camera);
 }
