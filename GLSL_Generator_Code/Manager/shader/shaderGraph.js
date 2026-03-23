@@ -17,7 +17,7 @@ function hexToVec3(hex) {
 function resolveConnection(value) {
     if (typeof value === "number") return value.toFixed(3);
     if (typeof value === "string" && value.startsWith("#")) return hexToVec3(value);
-    return value; // nom de variable GLSL, laisse tel quel
+    return value;
 }
 
 export let vertexShader="";
@@ -37,7 +37,7 @@ export class ShaderGraph {
         let connectionBlock = null;
         let noiseBlock = false;
 
-        // ── Vérifie si un block a besoin de snoise ────────────────────────────
+        // ── Check for the noise ────────────────────────────
         const needsSnoiseBlocks = ["WaveBlock", "WoodGrainBlock"];
         const hasBlockNeedingSnoise = this.blocks.some(b => 
             needsSnoiseBlocks.includes(b.constructor.name)
@@ -46,16 +46,15 @@ export class ShaderGraph {
             b.constructor.name === "NoiseBlock"
         );
 
-        // Si un WaveBlock ou WoodGrainBlock existe sans NoiseBlock avant lui,
-        // on injecte le globals noise EN PREMIER
+        // import noise if wave or grain wood without
         if (hasBlockNeedingSnoise && !hasNoiseBlock) {
             const tmpNoise = new NoiseBlock("_tmp", { normalized: false });
             const tmpCode = tmpNoise.generateCode().globals;
             globalsSet.add(tmpCode);
             globals += tmpCode + "\n";
             noiseBlock = true;
-        } else if (hasBlockNeedingSnoise) {
-            // Il y a un NoiseBlock mais peut-être APRÈS — on force le globals noise en premier
+        }
+        else if (hasBlockNeedingSnoise) {
             const firstNoise = this.blocks.find(b => b.constructor.name === "NoiseBlock");
             if (firstNoise) {
                 const noiseCode = firstNoise.generateCode().globals;
@@ -65,7 +64,7 @@ export class ShaderGraph {
             }
         }
 
-        // ── Boucle normale ────────────────────────────────────────────────────
+        // import everything
         for (const block of this.blocks) {
             const code = block.generateCode();
 
@@ -81,16 +80,6 @@ export class ShaderGraph {
             if (block.constructor.name === "ConnectionBlock") connectionBlock = block;
             if (block.constructor.name === "NoiseBlock") noiseBlock = true;
         }
-
-        // ── Fallback existant — garde le au cas où ────────────────────────────
-        if (mainCode.includes("snoise") && !noiseBlock) {
-            const tmpNoise = new NoiseBlock("_tmp", { normalized: false });
-            const tmpCode = tmpNoise.generateCode().globals;
-            if (!globalsSet.has(tmpCode)) {
-                globals = tmpCode + "\n" + globals; // ← prepend, pas append
-            }
-        }
-
 
         if (connectionBlock) {
             const connections = connectionBlock.connections || {};

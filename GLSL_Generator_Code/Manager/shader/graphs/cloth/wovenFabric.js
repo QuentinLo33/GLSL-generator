@@ -9,17 +9,18 @@ import { BumpMultiplierBlock } from "../../blocks/operators/bumpMultiplier.js";
 import { WaveBlock } from "../../blocks/patterns/wave.js";
 
 export function getGraph() {
-    // 1. Mapping de base
-    const mapping1 = new MappingBlock("mapping1", {
+    // ── Mappings ──────────────────────────────────────────────────────────────
+    // UV
+    const mappingUV = new MappingBlock("mappingUV", {
         scale: [1, 1, 1],
         offset: [0, 0, 0],
         rotation: [0, 0, 0],
         mode: "uv"
     });
 
-    // 2. Grain / bruit léger pour déformation
-    const noise1 = new NoiseBlock("noise1", {
-        input: "mapping1",
+    // Noise deformation
+    const noiseDeformation = new NoiseBlock("noiseDeformation", {
+        input: "mappingUV",
         scale: 1,
         detail: 12,
         roughness: 0.5,
@@ -28,29 +29,17 @@ export function getGraph() {
         normalized: true
     });
 
+    // Deformation mapping
     const mixDeformation = new MixBlock("mixDeformation", {
-        inputA: "mapping1",
-        inputB: "noise1",
+        inputA: "mappingUV",
+        inputB: "noiseDeformation",
         mode: "mix",
-        factor: 0.05 // très léger pour déformer subtilement
+        factor: 0.05
     });
 
-    // 3. Première vague (Y)
-    const wave1 = new WaveBlock("wave1", {
-        input: "mixDeformation",
-        type: "sine",
-        pattern: "bands",
-        axis: "Y",
-        scale: 1000.0,
-        distortion: 2.0,
-        detail: 3,
-        detailScale: 2.0,
-        detailRoughness: 0.5,
-        phase: 1.0
-    });
-
-    // 4. Deuxième vague (X)
-    const wave2 = new WaveBlock("wave2", {
+    // ── Weaving ──────────────────────────────────────────────────────────────
+    // Wave X
+    const waveX = new WaveBlock("waveX", {
         input: "mixDeformation",
         type: "sine",
         pattern: "bands",
@@ -63,51 +52,66 @@ export function getGraph() {
         phase: 1.0
     });
 
-    
-    // 5. Mix des deux vagues pour effet tissage
-    const mixWave = new MixBlock("mixWave", {
-        inputA: "wave1",
-        inputB: "wave2",
+    // Wave Y
+    const waveY = new WaveBlock("waveY", {
+        input: "mixDeformation",
+        type: "sine",
+        pattern: "bands",
+        axis: "Y",
+        scale: 1000.0,
+        distortion: 2.0,
+        detail: 3,
+        detailScale: 2.0,
+        detailRoughness: 0.5,
+        phase: 1.0
+    });
+
+    // Mix: Wave X, Wave Y
+    const mixWaves = new MixBlock("mixWaves", {
+        inputA: "waveX",
+        inputB: "waveY",
         mode: "multiply",
         factor: 0.5
     });
 
-    const waveRemap = new MapRange("waveRemap", {
-    input: "mixWave.r",
-    fromMin: 0.3,  // ← coupe les valeurs basses
-    fromMax: 1.0,
-    toMin: 0.0,
-    toMax: 1.0,
-    mode: "smoothstep"
-});
+    const wavesRemap = new MapRange("wavesRemap", {
+        input: "mixWaves.r",
+        fromMin: 0.3,
+        fromMax: 1.0,
+        toMin: 0.0,
+        toMax: 1.0,
+        mode: "smoothstep"
+    });
 
-    // 7. Color ramp pour couleur des fibres
+    // ── Connection ──────────────────────────────────────────────────────────────
+    // Color
     const colorRamp = new ColorRampBlock("colorRamp", {
-        input: "waveRemap.r",  // ← utilise waveRemap pas mixWave
+        input: "wavesRemap.r",  // ← utilise waveRemap pas mixWave
         positions: [0.0, 0.7, 1.0],
         colors: [
-            [31, 31, 115],   // fibre bleue
-            [31, 31, 115],  // bord trou
-            [24, 24, 99],  // centre trou blanc
+            [31, 31, 115],   // fibre
+            [31, 31, 115],  // border hole
+            [24, 24, 99],  // center hole
         ],
         mode: "linear"
     });
     
-    // 6. Remap pour roughness
+    // Roughness
     const roughnessFinal = new MapRange("roughnessFinal", {
-        input: "waveRemap.r",
+        input: "wavesRemap.r",
         fromMin: 0.0,
         fromMax: 1.0,
-        toMin: 0.75,   // intersections = très rough
-        toMax: 0.45,   // fils = rough aussi mais moins
+        toMin: 0.75,   // intersections
+        toMax: 0.45,   // wires
         mode: "linear"
     });
 
-    // Bump plus doux
+    // Bump
     const bump = new BumpMultiplierBlock("bump", {
-        input: "mixWave",
-        factor: 0.15  // réduis si les dents de scie persistent
+        input: "mixWaves",
+        factor: 0.15
     });
+
 
     const output = new ConnectionBlock("output", {
         color: "colorRamp",
@@ -117,13 +121,15 @@ export function getGraph() {
     });
 
     return [
-        mapping1,
-        noise1,
+        mappingUV,
+        noiseDeformation,
         mixDeformation,
-        wave1,
-        wave2,
-        mixWave,
-        waveRemap,
+        
+        waveX,
+        waveY,
+        mixWaves,
+        wavesRemap,
+
         colorRamp,
         roughnessFinal,
         bump,

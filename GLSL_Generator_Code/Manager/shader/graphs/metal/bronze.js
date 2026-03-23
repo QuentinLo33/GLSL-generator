@@ -9,11 +9,14 @@ import { BumpMultiplierBlock } from "../../blocks/operators/bumpMultiplier.js";
 
 export function getGraph() {
 
+    // ── Mapping ──────────────────────────────────────────────────────────────
     const mapping1 = new MappingBlock("mapping1", {
         scale: [1.3, 1.3, 1.3],  // était 0.8
         offset: [0, 0, 0], rotation: [0, 0, 0], mode: "local"
     });
 
+
+    // ── Pattern ──────────────────────────────────────────────────────────────
     const noise1 = new NoiseBlock("noise1", {
         input: "mapping1",
         scale: 2.5,   // était 1.5
@@ -36,20 +39,7 @@ export function getGraph() {
         mode: "smooth"
     });
 
-    const roughness = new MapRange("roughness", {
-        input: "noise1.r",
-        fromMin: 0, fromMax: 1,
-        toMin: 0.05,   // très poli → highlights larges
-        toMax: 0.25,
-        mode: "linear"
-    });
-
-    const bump = new BumpMultiplierBlock("bump", {
-        input: "noise1",
-        factor: 0.08   // bump très léger
-    });
-
-    // Rajoute dans bronze.js
+    // Oxide
     const noiseOxide = new NoiseBlock("noiseOxide", {
         input: "mapping1",
         scale: 1.8,  // était 1.0
@@ -75,11 +65,31 @@ export function getGraph() {
         mode: "smooth"
     });
 
+    // Oxide
     const mixFinal = new MixBlock("mixFinal", {
         inputA: "colorBronze",
         inputB: "colorOxide",
         factor: "oxideRemap.r",
         mode: "mix"
+    });
+
+
+    // ── Connection ──────────────────────────────────────────────────────────────
+
+
+    // Roughness
+    const roughness = new MapRange("roughness", {
+        input: "noise1.r",
+        fromMin: 0, fromMax: 1,
+        toMin: 0.05,   // très poli → highlights larges
+        toMax: 0.25,
+        mode: "linear"
+    });
+
+    // Bump
+    const bump = new BumpMultiplierBlock("bump", {
+        input: "noise1",
+        factor: 0.08   // bump très léger
     });
 
     const output = new ConnectionBlock("output", {

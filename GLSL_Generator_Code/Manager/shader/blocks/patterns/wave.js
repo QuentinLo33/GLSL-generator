@@ -1,4 +1,3 @@
-// wave.js
 export class WaveBlock {
     constructor(name, {
         input = "vPosition",       // variable d'entrée

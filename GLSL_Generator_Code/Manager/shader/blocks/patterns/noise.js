@@ -73,9 +73,9 @@ float snoise(vec3 v){
     return 42.0*dot(m*m, vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
 }
 
-// ── fBm ──────────────────────────────────────────────────────────────────────
-// Fractal Brownian Motion classique — somme de noises à fréquences croissantes
-// Résultat : nuages, terrain doux, matière organique générique
+// ── Noise: fBm ──────────────────────────────────────────────────────────────────────
+// Classic Brownian Motion Fractal — sum of noises at increasing frequencies
+// Result: clouds, soft ground, generic organic matter
 vec3 getNoise_fBm(vec3 pos, int detail, float scale, float roughness, float lacunarity, float distortion, bool normalized){
     vec3 p = pos * scale;
     float value = 0.0;
@@ -95,10 +95,10 @@ vec3 getNoise_fBm(vec3 pos, int detail, float scale, float roughness, float lacu
     return vec3(value);
 }
 
-// ── Hetero Terrain ────────────────────────────────────────────────────────────
-// Les octaves sont multipliés par la valeur courante → les zones hautes
-// accumulent plus de détail que les zones basses.
-// Résultat : plaines lisses + reliefs complexes, parfait pour terrain réaliste
+// ── Noise: Hetero Terrain ────────────────────────────────────────────────────────────
+// Octaves are multiplied by the current value → higher frequencies
+// Accumulate more detail than lower frequencies.
+// Result: smooth plains + complex terrain, perfect for realistic terrain
 vec3 getNoise_heteroTerrain(vec3 pos, int detail, float scale, float roughness, float lacunarity, float distortion, bool normalized){
     vec3 p   = pos * scale;
     float freq  = 1.0;
@@ -116,52 +116,6 @@ vec3 getNoise_heteroTerrain(vec3 pos, int detail, float scale, float roughness, 
     value += snoise(pos*distortion)*0.05;
     return vec3(value);
 }
-
-    // ── Billowy ───────────────────────────────────────────────────────────────────
-    vec3 getNoise_billowy(vec3 pos, int detail, float scale, float roughness, float lacunarity, float distortion, bool normalized){
-        vec3 p  = pos * scale;
-        float freq  = 1.0;
-        float amp   = 0.5;
-        float value = 0.0;
-        float maxV  = 0.0;
-        for(int i=0;i<detail;i++){
-            float n = abs(snoise(p*freq));
-            value  += n * amp;
-            maxV   += amp;
-            amp    *= roughness;
-            freq   *= lacunarity;
-        }
-        value /= maxV;
-        if(normalized) value = value*2.0-1.0;
-        value += snoise(pos*distortion)*0.05;
-        return vec3(clamp(value,0.0,1.0));
-    }
-
-    // ── Domain Warping ────────────────────────────────────────────────────────────
-    vec3 getNoise_domainWarping(vec3 pos, int detail, float scale, float roughness, float lacunarity, float distortion, bool normalized){
-        vec3 p   = pos * scale;
-        float value = 0.0;
-        float amp   = 0.5;
-        float freq  = 1.0;
-        float maxV  = 0.0;
-        vec3 warp   = vec3(0.0);
-        for(int i=0;i<detail;i++){
-            vec3 warped = p*freq + warp * distortion * 0.5;
-            float n     = snoise(warped);
-            value  += n * amp;
-            maxV   += amp;
-            warp   += vec3(
-                snoise(warped + vec3(1.7, 9.2, 3.4)),
-                snoise(warped + vec3(8.3, 2.8, 5.1)),
-                snoise(warped + vec3(4.1, 6.7, 1.9))
-            ) * amp;
-            amp  *= roughness;
-            freq *= lacunarity;
-        }
-        value /= maxV;
-        if(normalized) value = value*0.5+0.5;
-        return vec3(clamp(value, 0.0, 1.0));
-    }
 
 `;
 

@@ -8,10 +8,8 @@ import { BumpMultiplierBlock } from "../../blocks/operators/bumpMultiplier.js";
 import { WaveBlock } from "../../blocks/patterns/wave.js";
 
 export function getGraph() {
-
-    // ── Mappings ──────────────────────────────────────────────────────────────
-
-    // UV → waves (tissage)
+    // ── Mappings Weaving ──────────────────────────────────────────────────────────────
+    // UV
     const mappingUV = new MappingBlock("mappingUV", {
         scale: [1, 1, 1],
         offset: [0, 0, 0],
@@ -19,41 +17,28 @@ export function getGraph() {
         mode: "uv"
     });
 
-    // ── Tissage ───────────────────────────────────────────────────────────────
-
-    // Grain léger pour déformer les waves
-    const noise1 = new NoiseBlock("noise1", {
+    // Noise deformation
+    const noiseDeformation = new NoiseBlock("noiseDeformation", {
         input: "mappingUV",
         scale: 1,
         detail: 12,
         roughness: 0.5,
-        lacunarity: 2,
+        lacunatrity: 2,
         distortion: 3,
-        normalized: true,
-        mode: "fBm"
+        normalized: true
     });
 
+    // Deformation mapping
     const mixDeformation = new MixBlock("mixDeformation", {
         inputA: "mappingUV",
-        inputB: "noise1",
+        inputB: "noiseDeformation",
         mode: "mix",
         factor: 0.05
     });
 
-    const wave1 = new WaveBlock("wave1", {
-        input: "mixDeformation",
-        type: "sine",
-        pattern: "bands",
-        axis: "Y",
-        scale: 1000.0,
-        distortion: 2.0,
-        detail: 3,
-        detailScale: 2.0,
-        detailRoughness: 0.5,
-        phase: 1.0
-    });
-
-    const wave2 = new WaveBlock("wave2", {
+    // ── Weaving ──────────────────────────────────────────────────────────────
+    // Wave X
+    const waveX = new WaveBlock("waveX", {
         input: "mixDeformation",
         type: "sine",
         pattern: "bands",
@@ -66,15 +51,30 @@ export function getGraph() {
         phase: 1.0
     });
 
-    const mixWave = new MixBlock("mixWave", {
-        inputA: "wave1",
-        inputB: "wave2",
+    // Wave Y
+    const waveY = new WaveBlock("waveY", {
+        input: "mixDeformation",
+        type: "sine",
+        pattern: "bands",
+        axis: "Y",
+        scale: 1000.0,
+        distortion: 2.0,
+        detail: 3,
+        detailScale: 2.0,
+        detailRoughness: 0.5,
+        phase: 1.0
+    });
+
+    // Mix: Wave X, Wave Y
+    const mixWaves = new MixBlock("mixWaves", {
+        inputA: "waveX",
+        inputB: "waveY",
         mode: "multiply",
         factor: 0.5
     });
 
-    const waveRemap = new MapRange("waveRemap", {
-        input: "mixWave.r",
+    const wavesRemap = new MapRange("wavesRemap", {
+        input: "mixWaves.r",
         fromMin: 0.3,
         fromMax: 1.0,
         toMin: 0.0,
@@ -83,27 +83,27 @@ export function getGraph() {
     });
 
     // ── Camo pattern ──────────────────────────────────────────────────────────
-
-    // Mapping plus petit = taches plus grandes
+    // Local
     const mappingLocal = new MappingBlock("mappingLocal", {
-        scale: [4, 4, 4],  // ← était 4,4,4 — beaucoup plus grand
+        scale: [4, 4, 4],
         offset: [0, 0, 0],
         rotation: [0, 0, 0],
         mode: "local"
     });
 
+    // Large noise
     const noiseCamo1 = new NoiseBlock("noiseCamo1", {
         input: "mappingLocal",
         scale: 1.0,
-        detail: 3,        // ← peu de détail = formes larges et fluides
+        detail: 3,
         roughness: 0.5,
         lacunarity: 2.0,
-        distortion: 0.5,  // ← distortion faible
+        distortion: 0.5,
         normalized: true,
         mode: "fBm"
     });
 
-    // Deuxième noise juste pour les petits détails des bords
+    // Small noise
     const noiseCamo2 = new NoiseBlock("noiseCamo2", {
         input: "mappingLocal",
         scale: 3.0,
@@ -115,32 +115,33 @@ export function getGraph() {
         mode: "fBm"
     });
 
-    // Mix très léger — noiseCamo1 domine largement
+    // Mix: noiseCamo1, noiseCamo2
     const mixCamo = new MixBlock("mixCamo", {
         inputA: "noiseCamo1",
         inputB: "noiseCamo2",
         mode: "mix",
-        factor: 0.15   // ← 15% seulement de noiseCamo2
+        factor: 0.15 
     });
 
-    // 4 bandes bien distinctes comme la référence
+
+    // ── Connection ──────────────────────────────────────────────────────────────
+    // Color
     const colorRamp = new ColorRampBlock("colorRamp", {
         input: "mixCamo.r",
         positions: [0.0, 0.4, 0.6, 1.0],
         colors: [
-            [20,  50,  20],    // vert très foncé
-            [55,  90,  35],    // vert moyen
-            [80,  60,  30],    // brun
-            [20,  50,  20],    // retour vert foncé
+            [20,  50,  20],    // main
+            [55,  90,  35],    // spot 1
+            [80,  60,  30],    // spot 2
+            [20,  250,  20],   // main
         ],
         mode: "constant"
     });
 
 
-    // ── Roughness & Bump ──────────────────────────────────────────────────────
-
+    // Roughness
     const roughnessFinal = new MapRange("roughnessFinal", {
-        input: "waveRemap.r",
+        input: "wavesRemap.r",
         fromMin: 0.0,
         fromMax: 1.0,
         toMin: 0.75,
@@ -148,15 +149,14 @@ export function getGraph() {
         mode: "linear"
     });
 
+    // Bump
     const bump = new BumpMultiplierBlock("bump", {
-        input: "mixWave",
+        input: "mixWaves",
         factor: 0.15
     });
 
-    // ── Output ────────────────────────────────────────────────────────────────
-
     const output = new ConnectionBlock("output", {
-        color: "colorRamp",       // ← colorRamp, pas noiseCamo2
+        color: "colorRamp",
         roughness: "roughnessFinal",
         metallic: "0.0",
         bump: "bump"
@@ -164,16 +164,19 @@ export function getGraph() {
 
     return [
         mappingUV,
-        mappingLocal,
-        noise1,
+        noiseDeformation,
         mixDeformation,
-        wave1,
-        wave2,
-        mixWave,
-        waveRemap,
+
+        waveX,
+        waveY,
+        mixWaves,
+        wavesRemap,
+
+        mappingLocal, 
         noiseCamo1,
         noiseCamo2,
         mixCamo,  
+
         colorRamp,
         roughnessFinal,
         bump,

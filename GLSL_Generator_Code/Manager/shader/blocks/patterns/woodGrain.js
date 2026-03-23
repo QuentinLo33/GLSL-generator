@@ -1,4 +1,3 @@
-// woodGrain.js — nouveau block à créer
 export class WoodGrainBlock {
     constructor(name, {
         input = "vPosition",
