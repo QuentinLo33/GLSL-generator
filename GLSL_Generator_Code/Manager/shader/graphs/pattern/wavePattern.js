@@ -1,21 +1,24 @@
+// operators
 import { MappingBlock } from "../../blocks/operators/mapping.js";
 import { ConnectionBlock } from "../../blocks/operators/connection.js";
 
+// patterns
 import { WaveBlock } from "../../blocks/patterns/wave.js";
 
+
 export function getGraph() {
-    const mapping1 = new MappingBlock("mapping1", {
+    const mapping = new MappingBlock("mapping", {
         scale: [1, 1, 1],
         offset: [0, 0, 0],
         rotation: [0, 0, 0],
         mode: "local"
     });
 
-    const wave1 = new WaveBlock("wave1", {
-        input: "mapping1",
-        type: "sine",
-        pattern: "bands",
-        axis: "Y",
+    const wave = new WaveBlock("wave", {
+        input: "mapping",
+        type: "sine", // "sine", "triangle", "saw",           
+        pattern: "bands", // "bands", "rings"
+        axis: "X", // "X", "Y", "Z"
         scale: 20.0,
         distortion: 0,
         detail: 3,
@@ -25,10 +28,10 @@ export function getGraph() {
     });
 
     const output = new ConnectionBlock("output", {
-        color: "wave1",
-        roughness: "wave1",
+        color: "wave",
+        roughness: "wave",
         metal: 0
     });
 
-    return [mapping1, wave1, output];
+    return [mapping, wave, output];
 }

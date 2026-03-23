@@ -205,7 +205,7 @@ const categories = {
     mineral: ["marble", "granite", "polishedStone"],
     synthetic: ["rubber"],
 
-    test: ["noiseTest", "voronoiTest", "waveTest", "magicTest"],
+    pattern: ["noisePattern", "voronoiPattern", "wavePattern", "magicPattern", "woodGrainPattern"],
 };
 
 const defaultModelByMaterial = {
@@ -228,11 +228,12 @@ const defaultModelByMaterial = {
     // synthetic
     "synthetic_rubber": "torus",
 
-    // test
-    "test_noiseTest":   "cube",
-    "test_voronoiTest": "cube",
-    "test_waveTest":    "cube",
-    "test_magicTest":   "cube",
+    // pattern
+    "pattern_noisePattern":   "cube",
+    "pattern_voronoiPattern": "cube",
+    "pattern_wavePattern":    "cube",
+    "pattern_magicPattern":   "cube",
+    "pattern_woodGrainPattern":   "cube",
 };
 // Add Listener for dynamic selection
 const categorySelect = document.getElementById("material-category");

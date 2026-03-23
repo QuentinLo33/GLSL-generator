@@ -1,32 +1,35 @@
+// operators
 import { MappingBlock } from "../../blocks/operators/mapping.js";
 import { ConnectionBlock } from "../../blocks/operators/connection.js";
 
+// patterns
 import { NoiseBlock } from "../../blocks/patterns/noise.js";
 
 
 export function getGraph() {
-    const mapping1 = new MappingBlock("mapping1", {
+    const mapping = new MappingBlock("mapping", {
         scale: [1, 1, 1],
         offset: [0, 0, 0],
         rotation: [0, 0, 0],
         mode: "local"
     });
 
-    const noise1 = new NoiseBlock("noise1", {
-        inputA: "noise1",
+    const noise = new NoiseBlock("noise", {
+        inputA: "mapping",
         scale:8,
         detail:8,
         roughness: 0.6,
         lacunatrity:3,
         distortion:0,
-        normalized:true
+        normalized:true,
+        mode: "fBm"  // "fBm", "heteroTerrain"
     });
 
     const output = new ConnectionBlock("output", {
-        color: "noise1",
-        roughness: "noise1",
+        color: "noise",
+        roughness: "noise",
         metal: 0
     });
 
-    return [mapping1, noise1, output];
+    return [mapping, noise, output];
 }
