@@ -303,7 +303,6 @@ export async function initShader() {
 
 // Adapt the model with the category
 categorySelect.addEventListener("change", async () => {
-    // Met à jour les sous-catégories
     updateSubcategoryOptions(categorySelect.value);
     updateMaterialType();
 });

@@ -16,7 +16,7 @@ const graphs = {
     "mineral_granite": () => import ("./graphs/mineral/granite.js"),
     "mineral_polishedStone": () => import ("./graphs/mineral/polishedStone.js"),
 
-    // 
+    // synthetic
     "synthetic_rubber": () => import ("./graphs/synthetic/rubber.js"),
     
     //test
