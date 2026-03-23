@@ -1,9 +1,13 @@
+// operators
 import { MappingBlock } from "../../blocks/operators/mapping.js";
 import { ConnectionBlock } from "../../blocks/operators/connection.js";
-import { NoiseBlock } from "../../blocks/patterns/noise.js";
+import { BumpMultiplierBlock } from "../../blocks/operators/bumpMultiplier.js";
 import { ColorRampBlock } from "../../blocks/operators/colorRamp.js";
 import { MapRange } from "../../blocks/operators/mapRange.js";
-import { BumpMultiplierBlock } from "../../blocks/operators/bumpMultiplier.js";
+
+// patterns
+import { NoiseBlock } from "../../blocks/patterns/noise.js";
+
 
 export function getGraph() {
 
