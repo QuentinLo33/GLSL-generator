@@ -1,9 +1,9 @@
 export class WaveBlock {
     constructor(name, {
-        input = "vPosition",       // variable d'entrée
-        type = "sine",             // sine / triangle / saw
-        pattern = "bands",         // bands / rings
-        axis = "X",                // X, Y ou Z
+        input = "vPosition",
+        type = "sine",             // "sine", "triangle", "saw"
+        pattern = "bands",         // "bands", "rings"
+        axis = "X",                // "X", "Y", "Z"
         scale = 1,
         distortion = 0,
         detail = 0,
@@ -84,13 +84,13 @@ const mainCode =
 }
 
 /*
-    const wave1 = new WaveBlock("wave1", {
-        input: "mapping1",
-        type: "sine",
-        pattern: "bands",
-        axis: "Y",
-        scale: 10.0,
-        distortion: 0.5,
+    const wave = new WaveBlock("wave", {
+        input: "mapping",
+        type: "sine", // "sine", "triangle", "saw",           
+        pattern: "bands", // "bands", "rings"
+        axis: "X", // "X", "Y", "Z"
+        scale: 20.0,
+        distortion: 0,
         detail: 3,
         detailScale: 2.0,
         detailRoughness: 0.5,

@@ -19,11 +19,12 @@ const graphs = {
     // synthetic
     "synthetic_rubber": () => import ("./graphs/synthetic/rubber.js"),
     
-    //test
-    "test_noiseTest": () => import("./graphs/test/noiseTest.js"),
-    "test_voronoiTest": () => import("./graphs/test/voronoiTest.js"),
-    "test_waveTest": () => import("./graphs/test/waveTest.js"),
-    "test_magicTest": () => import("./graphs/test/magicTest.js"),
+    //Pattern
+    "pattern_noisePattern": () => import("./graphs/pattern/noisePattern.js"),
+    "pattern_voronoiPattern": () => import("./graphs/pattern/voronoiPattern.js"),
+    "pattern_wavePattern": () => import("./graphs/pattern/wavePattern.js"),
+    "pattern_magicPattern": () => import("./graphs/pattern/magicPattern.js"),
+    "pattern_woodGrainPattern": () => import("./graphs/pattern/woodGrainPattern.js"),
 };
 
 export async function createShader(graph_name, mesh, camera, light) {

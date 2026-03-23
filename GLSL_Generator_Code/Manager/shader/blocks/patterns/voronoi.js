@@ -113,3 +113,16 @@ vec3 ${this.name} = getVoronoi(${this.input}, ${d}, ${s}, ${r}, ${l}, ${rand}, $
         return { globals, mainCode };
     }
 }
+
+/*
+    const voronoi = new VoronoiBlock("voronoi", {
+        input: "mapping",
+        scale: 2,
+        detail: 4,
+        roughness: 1,
+        lacunarity: 2,
+        randomness: 1,
+        mode: "F1", // "F1", "F2", "F2-F1", "F1+F2"
+        metric: "euclidean" // "euclidean", "manhattan", "chebychev", "minkowski"
+    });
+*/

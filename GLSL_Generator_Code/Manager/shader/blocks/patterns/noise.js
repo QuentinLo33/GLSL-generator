@@ -7,7 +7,7 @@ export class NoiseBlock {
         lacunarity = 2,
         distortion = 0,
         normalized = false,
-        mode = "fBm"  // fBm | heteroTerrain
+        mode = "fBm"  // "fBm", "heteroTerrain"
     } = {}) {
         this.name = name;
         this.input = input;
@@ -136,3 +136,16 @@ vec3 getNoise_heteroTerrain(vec3 pos, int detail, float scale, float roughness, 
         return { globals, mainCode };
     }
 }
+
+/*
+    const noise = new NoiseBlock("noise", {
+        inputA: "mapping",
+        scale:8,
+        detail:8,
+        roughness: 0.6,
+        lacunatrity:3,
+        distortion:0,
+        normalized:true,
+        mode: "fBm"  // "fBm", "heteroTerrain"
+    });
+*/

@@ -1,28 +1,31 @@
+// operators
 import { MappingBlock } from "../../blocks/operators/mapping.js";
 import { ConnectionBlock } from "../../blocks/operators/connection.js";
 
+// patterns
 import {MagicTextureBlock} from "../../blocks/patterns/magicTexture.js"
 
+
 export function getGraph() {
-    const mapping1 = new MappingBlock("mapping1", {
+    const mapping = new MappingBlock("mapping", {
         scale: [1, 1, 1],
         offset: [0, 0, 0],
         rotation: [0, 0, 0],
         mode: "local"
     });
 
-    const magic1=new MagicTextureBlock ("magic1", {
-        input:"mapping1",
+    const magic=new MagicTextureBlock ("magic", {
+        input:"mapping",
         scale:5,
         depth:2,
         distortion:5
     });
 
     const output = new ConnectionBlock("output", {
-        color: "magic1",
-        roughness: "magic1",
+        color: "magic",
+        roughness: "magic",
         metal: 0
     });
 
-    return [mapping1, magic1, output];
+    return [mapping, magic, output];
 }

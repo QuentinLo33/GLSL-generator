@@ -46,3 +46,12 @@ export class WoodGrainBlock {
         return { globals, mainCode };
     }
 }
+
+/*
+    const woodGrain = new WoodGrainBlock("woodGrain", {
+        input: "mapping",
+        scale: 2.5,
+        distortion: 2.0,
+        noiseScale: 0.25
+    });
+*/
