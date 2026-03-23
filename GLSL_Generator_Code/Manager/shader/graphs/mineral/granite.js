@@ -66,27 +66,27 @@ export function getGraph() {
         factor: 1.0
     });
 
-// Remap agressif AVANT la ColorRamp — crée un seuil dur
-const remapA = new MapRange("remapA", {
-    input: "mixFinal.r",
-    fromMin: 0.25,   // ← zone très étroite = seuil dur
-    fromMax: 0.55,
-    toMin: 0.0,
-    toMax: 1.0,
-    mode: "smoothstep"
-});
+    // Remap agressif AVANT la ColorRamp — crée un seuil dur
+    const remapA = new MapRange("remapA", {
+        input: "mixFinal.r",
+        fromMin: 0.25,   // ← zone très étroite = seuil dur
+        fromMax: 0.55,
+        toMin: 0.0,
+        toMax: 1.0,
+        mode: "smoothstep"
+    });
 
-// ColorRamp LINEAR avec seulement 2-3 couleurs
-const colorRamp = new ColorRampBlock("colorRamp", {
-    input: "remapA.r",
-    positions: [0.0, 0.01, 1.0],
-    colors: [
-        [20,  15,  12],    // noir — taches
-        [185, 135, 105],   // beige rosé ← fond
-        [230, 200, 175],   // blanc rosé
-    ],
-    mode: "linear"         // ← linear pas constant
-});
+    // ColorRamp LINEAR avec seulement 2-3 couleurs
+    const colorRamp = new ColorRampBlock("colorRamp", {
+        input: "remapA.r",
+        positions: [0.0, 0.01, 1.0],
+        colors: [
+            [20,  15,  12],    // noir — taches
+            [185, 135, 105],   // beige rosé ← fond
+            [230, 200, 175],   // blanc rosé
+        ],
+        mode: "linear"         // ← linear pas constant
+    });
 
     // Granite poli = assez lisse
     const roughnessFinal = new MapRange("roughnessFinal", {

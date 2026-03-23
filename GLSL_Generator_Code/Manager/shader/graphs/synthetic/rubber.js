@@ -6,59 +6,65 @@ import { MixBlock } from "../../blocks/operators/mix.js";
 import { VoronoiBlock } from "../../blocks/patterns/voronoi.js";
 
 export function getGraph() {
-
-      const mapping1 = new MappingBlock("mapping1", {
-            scale: [1, 1, 1],
-            offset: [0, 0, 0],
-            rotation: [0, 0, 0],
-            mode: "uv"
-        });
+    // ── Mappings ──────────────────────────────────────────────────────────────
+    // UV
+    const mapping = new MappingBlock("mapping", {
+        scale: [1, 1, 1],
+        offset: [0, 0, 0],
+        rotation: [0, 0, 0],
+        mode: "local"
+    });
     
-        // 2. Grain / bruit léger pour déformation
-        const noise1 = new NoiseBlock("noise1", {
-            input: "mapping1",
-            scale: 10,
-            detail: 12,
-            roughness: 0.5,
-            lacunatrity: 2,
-            distortion: 3,
-            normalized: true
-        });
+    // Noise deformation
+    const noiseDeformation = new NoiseBlock("noiseDeformation", {
+        input: "mapping",
+        scale: 10,
+        detail: 12,
+        roughness: 0.5,
+        lacunatrity: 2,
+        distortion: 3,
+        normalized: true
+    });
     
-        const mixDeformation = new MixBlock("mixDeformation", {
-            inputA: "mapping1",
-            inputB: "noise1",
-            mode: "mix",        // ← "linear" n'existe pas, utilise "mix"
-            factor: 0.03
-        });
+    // Deformation mapping
+    const mixDeformation = new MixBlock("mixDeformation", {
+        inputA: "mapping",
+        inputB: "noiseDeformation",
+        mode: "mix",
+        factor: 0.03
+    });
 
-        const voronoi = new VoronoiBlock("voronoi", {
-            input: "mixDeformation",
-            scale: 200.0,         // ← réduit de 30 à 8 = cellules plus grandes
+    // ── Pattern ──────────────────────────────────────────────────────────────
+    const voronoi = new VoronoiBlock("voronoi", {
+        input: "mixDeformation",
+            scale: 80.0,
             detail: 1,
-            roughness: 0.5,     // ← était 1, trop élevé
+            roughness: 0.5,
             lacunarity: 2.0,
-            randomness: 0.8,    // ← réduit de 1 = moins chaotique
-            mode: "F1",      // ← F2-F1 = texture de surface plus intéressante que F1
+            randomness: 0.8,
+            mode: "F1",
             metric: "euclidean"
         });
 
 
+
+    // ── Connection ──────────────────────────────────────────────────────────────
+    // Bump
     const bump = new BumpMultiplierBlock("bump", {
-        input: "voronoi",  // ← sur le remap
+        input: "voronoi",
         factor: 1
     });
 
     const output = new ConnectionBlock("output", {
-        color: "#1b1b1b",        // ← hex direct
-        roughness: 0.92,         // ← très mat = caoutchouc
+        color: "#1b1b1b",
+        roughness: 0.92,
         bump: "bump",
         metallic: 0
     });
 
     return [
-        mapping1,
-        noise1,
+        mapping,
+        noiseDeformation,
         mixDeformation,
         voronoi,
         bump,

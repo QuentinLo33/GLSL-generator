@@ -21,25 +21,26 @@ export class WoodGrainBlock {
     // WOOD GRAIN GLOBAL:
     float getWoodGrain(vec3 pos, float scale, float distortion, float noiseScale) {
         
-        // Noise étiré — déformation forte sur X, faible sur Y
+        // Streched noise ++X, Y+
         vec3 pN = vec3(pos.x * 0.5, pos.y * 3.0, pos.z * 0.5); // ← étire Y
         float nx = snoise(pN * noiseScale) * distortion;
         
         // Déplace uniquement X par le noise → lignes qui ondulent latéralement
-        // mais ne forment JAMAIS de boucles fermées
         float xWarped = pos.x + nx;
         
-        // Lignes parallèles sur la coordonnée déformée
+        // Parallel lines on the distorted coordinate
         float grain = sin(xWarped * scale * 6.2831853);
         
         return grain * 0.5 + 0.5;
     }
+
     `;
 
         const mainCode = `
         // WOOD GRAIN MAIN: ${this.name}
         float ${this.name}_raw = getWoodGrain(${this.input}, ${s}, ${dist}, ${ns});
         vec3 ${this.name} = vec3(${this.name}_raw);
+        
     `;
 
         return { globals, mainCode };

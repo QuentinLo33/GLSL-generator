@@ -10,28 +10,32 @@ import { BumpMultiplierBlock } from "../../blocks/operators/bumpMultiplier.js";
 import { WoodGrainBlock } from "../../blocks/patterns/woodGrain.js";
 
 export function getGraph() {
-
-    const mappingGrain = new MappingBlock("mappingGrain", {
+    // ── Mappings──────────────────────────────────────────────────────────────
+    const mapping = new MappingBlock("mapping", {
         scale: [1, 2, 1],   // ← plus étiré en Y = lignes plus longues
         offset: [0, 0, 0],
         rotation: [0, 0, 0],
         mode: "local"
     });
 
+    // ── Grain ──────────────────────────────────────────────────────────────
+    // Grain1
     const woodGrain = new WoodGrainBlock("woodGrain", {
-        input: "mappingGrain",
+        input: "mapping",
         scale: 6.0,
-        distortion: 1.5,    // ← plus fort = ondulations plus visibles
-        noiseScale: 0.4     // ← plus petit = ondulations plus larges/douces
+        distortion: 1.5,
+        noiseScale: 0.4
     });
 
+    // Grain2
     const woodGrain2 = new WoodGrainBlock("woodGrain2", {
-        input: "mappingGrain",
+        input: "mapping",
         scale: 2.5,
         distortion: 2.0,
         noiseScale: 0.25
     });
 
+    // Mix: Grain1, Grain2
     const mixGrain = new MixBlock("mixGrain", {
         inputA: "woodGrain",
         inputB: "woodGrain2",
@@ -39,9 +43,10 @@ export function getGraph() {
         factor: 0.5
     });
 
-    // Knots
+    // ── Knot ──────────────────────────────────────────────────────────────
+    // Noise knot
     const noiseKnot = new NoiseBlock("noiseKnot", {
-        input: "mappingGrain",
+        input: "mapping",
         scale: 0.8,
         detail: 2,
         roughness: 0.5,
@@ -51,6 +56,7 @@ export function getGraph() {
         mode: "fBm"
     });
 
+    // Voronoi knot
     const voronoiKnot = new VoronoiBlock("voronoiKnot", {
         input: "noiseKnot",
         scale: 2.5,
@@ -71,6 +77,7 @@ export function getGraph() {
         mode: "smoothstep"
     });
 
+    // Mix: Noise, Voronoi
     const mixFinal = new MixBlock("mixFinal", {
         inputA: "mixGrain",
         inputB: "knotRemap",
@@ -78,19 +85,22 @@ export function getGraph() {
         factor: 0.4
     });
 
+    // ── Connection──────────────────────────────────────────────────────────────
+    // Color
     const colorRamp = new ColorRampBlock("colorRamp", {
         input: "mixFinal.r",
         positions: [0.2, 0.1, 0.35, 0.65, 1.0],
         colors: [
-            [140,  80,  25],
-            [150, 90,  35],
-            [205, 148, 62],
-            [232, 195, 115],
-            [222, 185, 105],
+            [140,  80,  25], // dark waves
+            [150, 90,  35], // border waves
+            [205, 148, 62], // middle waves
+            [232, 195, 115], // random spot
+            [222, 185, 105], // random spot center
         ],
         mode: "smooth"
     });
 
+    // Roughness
     const roughnessFinal = new MapRange("roughnessFinal", {
         input: "mixFinal.r",
         fromMin: 0.0,
@@ -100,6 +110,7 @@ export function getGraph() {
         mode: "linear"
     });
 
+    // Bump
     const bump = new BumpMultiplierBlock("bump", {
         input: "mixFinal",
         factor: 0.15
@@ -113,7 +124,7 @@ export function getGraph() {
     });
 
     return [
-        mappingGrain,
+        mapping,
         woodGrain,
         woodGrain2,
         mixGrain,
