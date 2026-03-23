@@ -1,13 +1,16 @@
+// operators
 import { MappingBlock } from "../../blocks/operators/mapping.js";
 import { ConnectionBlock } from "../../blocks/operators/connection.js";
-import { NoiseBlock } from "../../blocks/patterns/noise.js";
-import { ColorRampBlock } from "../../blocks/operators/colorRamp.js";
 import { MixBlock } from "../../blocks/operators/mix.js";
-import { MapRange } from "../../blocks/operators/mapRange.js";
 import { BumpMultiplierBlock } from "../../blocks/operators/bumpMultiplier.js";
-import { WoodGrainBlock } from "../../blocks/patterns/woodGrain.js";
-import { WaveBlock } from "../../blocks/patterns/wave.js";
+import { ColorRampBlock } from "../../blocks/operators/colorRamp.js";
+import { MapRange } from "../../blocks/operators/mapRange.js";
+
+// patterns
+import { NoiseBlock } from "../../blocks/patterns/noise.js";
 import { VoronoiBlock } from "../../blocks/patterns/voronoi.js";
+import { WaveBlock } from "../../blocks/patterns/wave.js";
+
 
 export function getGraph() {
 
