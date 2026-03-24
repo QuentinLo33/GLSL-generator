@@ -8,7 +8,7 @@ import { BumpMultiplierBlock } from "../../blocks/operators/bumpMultiplier.js";
 import { WaveBlock } from "../../blocks/patterns/wave.js";
 
 export function getGraph() {
-    // ── Mappings Weaving ──────────────────────────────────────────────────────────────
+    // ── Mapping Weaving ──────────────────────────────────────────────────────────────
     // UV
     const mappingUV = new MappingBlock("mappingUV", {
         scale: [1, 1, 1],

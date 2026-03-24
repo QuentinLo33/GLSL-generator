@@ -21,42 +21,44 @@ export function getGraph() {
     });
 
     // ── Pattern ──────────────────────────────────────────────────────────────
-    // grande tache
+    // Large spots
     const noiseA = new NoiseBlock("noiseA", {
         input: "mapping",
         scale: 4.0,
         detail: 16,
-        roughness: 0.5,  // ← corrigé
+        roughness: 0.5,
         lacunarity: 2.0,
         distortion: 0.0,
         normalized: true,
         mode: "fBm"
     });
 
-    // Noise B — taches moyennes
+    // Medium spots
     const noiseB = new NoiseBlock("noiseB", {
         input: "mapping",
         scale: 8.0,
         detail: 16,
-        roughness: 0.5,  // ← corrigé
+        roughness: 0.5,
         lacunarity: 2.0,
         distortion: 0.0,
         normalized: true,
         mode: "fBm"
     });
 
-    // Noise C — micro taches / mica
+    // Mirco spots
     const noiseC = new NoiseBlock("noiseC", {
         input: "mapping",
         scale: 8.0,
         detail: 16,
-        roughness: 0.5,  // ← corrigé
+        roughness: 0.5,
         lacunarity: 2.0,
         distortion: 0.0,
         normalized: true,
         mode: "fBm"
     });
 
+    // ── Assembly ──────────────────────────────────────────────────────────────    
+    // Mix noiseA, noiseB
     const mixAB = new MixBlock("mixAB", {
         inputA: "noiseA",
         inputB: "noiseB",
@@ -64,6 +66,7 @@ export function getGraph() {
         factor: 1.0
     });
 
+    // Mix noiseAB, noiseC
     const mixFinal = new MixBlock("mixFinal", {
         inputA: "mixAB",
         inputB: "noiseC",
@@ -71,10 +74,9 @@ export function getGraph() {
         factor: 1.0
     });
 
-    // Remap agressif AVANT la ColorRamp — crée un seuil dur
     const remapA = new MapRange("remapA", {
         input: "mixFinal.r",
-        fromMin: 0.25,   // ← zone très étroite = seuil dur
+        fromMin: 0.25,
         fromMax: 0.55,
         toMin: 0.0,
         toMax: 1.0,
@@ -87,11 +89,11 @@ export function getGraph() {
         input: "remapA.r",
         positions: [0.0, 0.01, 1.0],
         colors: [
-            [20,  15,  12],    // noir — taches
-            [185, 135, 105],   // beige rosé ← fond
-            [230, 200, 175],   // blanc rosé
+            [20,  15,  12],    // center spots
+            [185, 135, 105],   // background
+            [230, 200, 175],   // border spots
         ],
-        mode: "linear"         // ← linear pas constant
+        mode: "linear"
     });
 
     // Roughness
@@ -119,12 +121,15 @@ export function getGraph() {
 
     return [
         mapping,
+
         noiseA,
         noiseB,
         noiseC,
+        
         mixAB,
         mixFinal,
         remapA,
+        
         colorRamp,
         roughnessFinal,
         bump,
