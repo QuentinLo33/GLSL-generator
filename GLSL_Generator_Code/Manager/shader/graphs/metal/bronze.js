@@ -78,8 +78,6 @@ export function getGraph() {
 
 
     // ── Connection ──────────────────────────────────────────────────────────────
-
-
     // Roughness
     const roughness = new MapRange("roughness", {
         input: "noise1.r",
@@ -102,5 +100,16 @@ export function getGraph() {
         metallic: 0.98
     });
 
-return [mapping1, noise1, colorBronze, roughness, bump, noiseOxide, oxideRemap, colorOxide, mixFinal, output];
+    return [
+        mapping1,
+        noise1,
+        colorBronze,
+        roughness,
+        bump,
+        noiseOxide,
+        oxideRemap,
+        colorOxide,
+        mixFinal,
+        output
+    ];
 }

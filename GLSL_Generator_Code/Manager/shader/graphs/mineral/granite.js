@@ -12,16 +12,18 @@ import { NoiseBlock } from "../../blocks/patterns/noise.js";
 
 export function getGraph() {
 
-    const mappingBase = new MappingBlock("mappingBase", {
+    // ── Mapping ──────────────────────────────────────────────────────────────
+    const mapping = new MappingBlock("mapping", {
         scale: [3, 3, 3],
         offset: [0, 0, 0],
         rotation: [0, 0, 0],
         mode: "local"
     });
 
-    // Noise A — grandes taches
+    // ── Pattern ──────────────────────────────────────────────────────────────
+    // grande tache
     const noiseA = new NoiseBlock("noiseA", {
-        input: "mappingBase",
+        input: "mapping",
         scale: 4.0,
         detail: 16,
         roughness: 0.5,  // ← corrigé
@@ -33,7 +35,7 @@ export function getGraph() {
 
     // Noise B — taches moyennes
     const noiseB = new NoiseBlock("noiseB", {
-        input: "mappingBase",
+        input: "mapping",
         scale: 8.0,
         detail: 16,
         roughness: 0.5,  // ← corrigé
@@ -45,7 +47,7 @@ export function getGraph() {
 
     // Noise C — micro taches / mica
     const noiseC = new NoiseBlock("noiseC", {
-        input: "mappingBase",
+        input: "mapping",
         scale: 8.0,
         detail: 16,
         roughness: 0.5,  // ← corrigé
@@ -79,7 +81,8 @@ export function getGraph() {
         mode: "smoothstep"
     });
 
-    // ColorRamp LINEAR avec seulement 2-3 couleurs
+    // ── Connection ──────────────────────────────────────────────────────────────
+    // Color
     const colorRamp = new ColorRampBlock("colorRamp", {
         input: "remapA.r",
         positions: [0.0, 0.01, 1.0],
@@ -91,7 +94,7 @@ export function getGraph() {
         mode: "linear"         // ← linear pas constant
     });
 
-    // Granite poli = assez lisse
+    // Roughness
     const roughnessFinal = new MapRange("roughnessFinal", {
         input: "mixFinal.r",
         fromMin: 0.0,
@@ -101,6 +104,7 @@ export function getGraph() {
         mode: "linear"
     });
 
+    // Bump
     const bump = new BumpMultiplierBlock("bump", {
         input: "mixFinal",
         factor: 0.2
@@ -114,7 +118,7 @@ export function getGraph() {
     });
 
     return [
-        mappingBase,
+        mapping,
         noiseA,
         noiseB,
         noiseC,

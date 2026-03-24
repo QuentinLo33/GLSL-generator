@@ -128,13 +128,16 @@ export function getGraph() {
 
     return [
         mapping,
+
         woodGrain,
         woodGrain2,
         mixGrain,
+
         noiseKnot,
         voronoiKnot,
         knotRemap,
         mixFinal,
+
         colorRamp,
         roughnessFinal,
         bump,

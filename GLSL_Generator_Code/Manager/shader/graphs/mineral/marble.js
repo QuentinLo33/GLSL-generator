@@ -14,16 +14,18 @@ import { WaveBlock } from "../../blocks/patterns/wave.js";
 
 export function getGraph() {
 
-    const mappingBase = new MappingBlock("mappingBase", {
+    // ── Mappings ──────────────────────────────────────────────────────────────
+    // Mapping
+    const mapping = new MappingBlock("mapping", {
         scale: [4, 4, 4],   // ← plus grand = veines plus fines
         offset: [0, 0, 0],
         rotation: [0, 0, 0],
         mode: "local"
     });
 
-    // Noise mixé avec le mapping
-    const noiseMix = new NoiseBlock("noiseMix", {
-        input: "mappingBase",
+    // Noise Deformation
+    const noiseDeformation = new NoiseBlock("noiseDeformation", {
+        input: "mapping",
         scale: 1.5,
         detail: 5,
         roughness: 0.5,
@@ -33,21 +35,22 @@ export function getGraph() {
         mode: "fBm"
     });
 
-    // Mix noise + mapping
-    const mixNoise = new MixBlock("mixNoise", {
-        inputA: "mappingBase",
-        inputB: "noiseMix",
+    // Mapping Deformation
+    const mixDeformation = new MixBlock("mixDeformation", {
+        inputA: "mapping",
+        inputB: "noiseDeformation",
         mode: "mix",
         factor: 0.8
     });
 
-    // Wave SAW sur le mix
+    // ── Pattern ──────────────────────────────────────────────────────────────
+    // Wave Saw
     const waveSaw = new WaveBlock("waveSaw", {
-        input: "mixNoise",
+        input: "mixDeformation",
         type: "saw",
         pattern: "bands",
         axis: "X",
-        scale: 5.0,         // ← réduit = veines plus larges et visibles
+        scale: 5.0,
         distortion: 0.0,
         detail: 0,
         detailScale: 1.0,
@@ -55,16 +58,15 @@ export function getGraph() {
         phase: 0.0
     });
 
-
-    // Mix waveSaw + mapping → coordonnée déformée pour le Voronoi
+    // Mix: mapping, wave
     const mixWave = new MixBlock("mixWave", {
-        inputA: "mappingBase",
+        inputA: "mapping",
         inputB: "waveSaw",
         mode: "mix",
         factor: 0.6
     });
 
-    // Voronoi branché sur le résultat
+    // Voronoi
     const voronoi = new VoronoiBlock("voronoi", {
         input: "mixWave",
         scale: 3.0,
@@ -76,20 +78,22 @@ export function getGraph() {
         metric: "euclidean"
     });
 
-    // ColorRamp marbre
+    // ── Connection ──────────────────────────────────────────────────────────────
+    // Color
     const colorRamp = new ColorRampBlock("colorRamp", {
         input: "voronoi.r",
         positions: [0.0, 0.12, 0.3, 0.6, 1.0],
         colors: [
-            [25,  80,  70],    // ← plus sombre pour les taches
-            [55,  130, 115],   // vert moyen
-            [95,  190, 170],   // vert-bleu clair ← dominant
-            [120, 205, 185],   // turquoise clair
-            [75,  160, 140],   // retour vert moyen
+            [25,  80,  70],    // cell center — darkest/deepest areas
+            [55,  130, 115],   // near the center — quick transition
+            [95,  190, 170],   // main surface ← dominant (the majority of pixels)
+            [120, 205, 185],   // light areas, near the edges
+            [75,  160, 140],   // edges between cells — dark return (veins)
         ],
         mode: "linear"
     });
 
+    // Roughness
     const roughnessFinal = new MapRange("roughnessFinal", {
         input: "voronoi.r",
         fromMin: 0.0,
@@ -99,6 +103,7 @@ export function getGraph() {
         mode: "linear"
     });
 
+    // Bump
     const bump = new BumpMultiplierBlock("bump", {
         input: "voronoi",
         factor: 0.05
@@ -112,12 +117,14 @@ export function getGraph() {
     });
 
     return [
-        mappingBase,
-        noiseMix,
-        mixNoise,
+        mapping,
+        noiseDeformation,
+        mixDeformation,
+
         waveSaw,
         mixWave,
         voronoi,
+
         colorRamp,
         roughnessFinal,
         bump,

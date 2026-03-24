@@ -108,11 +108,13 @@ export function getGraph() {
 
     return [
         mappingBase,
+    
         noiseBase,
         noiseGrain,
         noiseMicro,
         mixAB,
         mixFinal,
+        
         colorRamp,
         roughnessFinal,
         bump,

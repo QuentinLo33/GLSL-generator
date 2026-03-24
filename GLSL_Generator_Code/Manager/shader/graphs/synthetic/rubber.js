@@ -70,7 +70,9 @@ export function getGraph() {
         mapping,
         noiseDeformation,
         mixDeformation,
+
         voronoi,
+
         bump,
         output
     ];
