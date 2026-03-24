@@ -11,17 +11,18 @@ import { NoiseBlock } from "../../blocks/patterns/noise.js";
 
 
 export function getGraph() {
-
-    const mappingBase = new MappingBlock("mappingBase", {
+    // ── Mapping ──────────────────────────────────────────────────────────────
+    const mapping = new MappingBlock("mapping", {
         scale: [2, 2, 2],
         offset: [0, 0, 0],
         rotation: [0, 0, 0],
         mode: "local"
     });
 
-    // Grandes variations de couleur — béton pas uniforme
+    // ── Patterns ──────────────────────────────────────────────────────────────
+    // Large noise
     const noiseBase = new NoiseBlock("noiseBase", {
-        input: "mappingBase",
+        input: "mapping",
         scale: 1.5,
         detail: 4,
         roughness: 0.6,
@@ -31,9 +32,9 @@ export function getGraph() {
         mode: "fBm"
     });
 
-    // Grain fin — texture de surface du béton
+    // Medium noise
     const noiseGrain = new NoiseBlock("noiseGrain", {
-        input: "mappingBase",
+        input: "mapping",
         scale: 12.0,
         detail: 6,
         roughness: 0.7,
@@ -43,9 +44,9 @@ export function getGraph() {
         mode: "fBm"
     });
 
-    // Micro-grain — pores et granulats
+    // Mirco noise
     const noiseMicro = new NoiseBlock("noiseMicro", {
-        input: "mappingBase",
+        input: "mapping",
         scale: 30.0,
         detail: 3,
         roughness: 0.5,
@@ -55,7 +56,8 @@ export function getGraph() {
         mode: "fBm"
     });
 
-    // Mix base + grain
+    // ── Assembly ──────────────────────────────────────────────────────────────  
+    // Mix: large noise, medium noise
     const mixAB = new MixBlock("mixAB", {
         inputA: "noiseBase",
         inputB: "noiseGrain",
@@ -63,7 +65,7 @@ export function getGraph() {
         factor: 0.6
     });
 
-    // Mix + micro
+    // Mix: large&medium noise, micro noise
     const mixFinal = new MixBlock("mixFinal", {
         inputA: "mixAB",
         inputB: "noiseMicro",
@@ -71,30 +73,31 @@ export function getGraph() {
         factor: 0.2
     });
 
-    // ColorRamp béton — gris froid
+    // ── Connection ──────────────────────────────────────────────────────────────  
     const colorRamp = new ColorRampBlock("colorRamp", {
         input: "mixFinal.r",
         positions: [0.0, 0.3, 0.6, 1.0],
         colors: [
-            [95,  95,  92],    // gris foncé — zones humides/ombres
-            [148, 146, 142],   // gris moyen ← dominant
-            [185, 183, 178],   // gris clair
-            [210, 208, 204],   // gris très clair — granulats clairs
+            [95, 95, 92], // dark aggregates, hollow areas, wet areas
+            [148, 146, 142], // standard concrete, base color
+            [185, 183, 178], // light aggregates, dry/bright areas
+            [210, 208, 204], //white aggregates, quartz, very light areas
         ],
         mode: "linear"
     });
 
-    // Béton = très rugueux, aucun reflet
+    // Bump
     const bump = new BumpMultiplierBlock("bump", {
         input: "mixFinal",
-        factor: 0.8    // ← était 0.35, beaucoup plus fort
+        factor: 0.8
     });
 
+    // Roughness
     const roughnessFinal = new MapRange("roughnessFinal", {
         input: "mixFinal.r",
         fromMin: 0.0,
         fromMax: 1.0,
-        toMin: 1.0,   // ← quasi 1.0
+        toMin: 1.0,
         toMax: 0.85,
         mode: "linear"
     });
@@ -107,11 +110,12 @@ export function getGraph() {
     });
 
     return [
-        mappingBase,
-    
+        mapping,
+
         noiseBase,
         noiseGrain,
         noiseMicro,
+        
         mixAB,
         mixFinal,
         

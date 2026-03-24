@@ -14,7 +14,7 @@ import { WaveBlock } from "../../blocks/patterns/wave.js";
 
 export function getGraph() {
 
-    // ── Mappings ──────────────────────────────────────────────────────────────
+    // ── Mapping ──────────────────────────────────────────────────────────────
     // Mapping
     const mapping = new MappingBlock("mapping", {
         scale: [4, 4, 4],   // ← plus grand = veines plus fines
