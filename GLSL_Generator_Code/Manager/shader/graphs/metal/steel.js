@@ -11,15 +11,17 @@ import { NoiseBlock } from "../../blocks/patterns/noise.js";
 
 export function getGraph() {
 
-    const mapping1 = new MappingBlock("mapping1", {
+    // ── Mapping ──────────────────────────────────────────────────────────────
+    const mapping = new MappingBlock("mapping", {
         scale: [2, 2, 2],
         offset: [0, 0, 0],
         rotation: [0, 0, 0],
         mode: "local"
     });
 
-    const noiseSurface = new NoiseBlock("noiseSurface", {
-        input: "mapping1",
+    // ── Pattern ──────────────────────────────────────────────────────────────
+    const noise = new NoiseBlock("noise", {
+        input: "mapping",
         scale: 3.0,
         detail: 5,
         roughness: 0.55,
@@ -28,40 +30,50 @@ export function getGraph() {
         normalized: true
     });
 
-    // Argent : gris très froid, quasi blanc sur les reflets
-    const colorsteel = new ColorRampBlock("colorsteel", {
-        input: "noiseSurface.r",
+    // ── Connection ──────────────────────────────────────────────────────────────
+    // Color
+    const colorRamp = new ColorRampBlock("colorRamp", {
+        input: "noise.r",
         positions: [0, 0.25, 0.55, 0.8, 1.0],
         colors: [
-            [155, 155, 158],  // creux — gris moyen
-            [188, 188, 192],  // argent foncé
-            [210, 210, 213],  // argent moyen
-            [228, 228, 230],  // argent clair
-            [245, 245, 247],  // reflet blanc
+            [150, 155, 158],  // hollows, shadowy areas, cold metal
+            [188, 188, 192],  // neutral surface, the majority
+            [210, 210, 213],  // dimly lit areas 
+            [228, 228, 230],  // light areas, almost a reflection
+            [245, 245, 247],  // white/shiny highlights
         ],
         mode: "smooth"
     });
 
-    // Argent très poli — roughness très basse
+    // Roughness
     const roughness = new MapRange("roughness", {
-        input: "noiseSurface.r",
+        input: "noise.r",
         fromMin: 0, fromMax: 1,
         toMin: 0.05,
         toMax: 0.22,
         mode: "linear"
     });
 
+    // Bump
     const bump = new BumpMultiplierBlock("bump", {
-        input: "noiseSurface",
+        input: "noise",
         factor: 0.08
     });
 
     const output = new ConnectionBlock("output", {
-        color: "colorsteel",
+        color: "colorRamp",
         roughness: "roughness",
         bump: "bump",
         metallic: 0.98
     });
 
-    return [mapping1, noiseSurface, colorsteel, roughness, bump, output];
+    return [
+        mapping,
+        
+        noise,
+        
+        colorRamp,
+        roughness,
+        bump,
+        output];
 }
