@@ -15,7 +15,7 @@ export class MappingBlock {
     generateCodeGlobal() {
         return "";
     }
-    generateCodeCode() {
+    generateCodeMain() {
         const [sx, sy, sz] = this.scale.map(v => v.toFixed(3));
         const [ox, oy, oz] = this.offset.map(v => v.toFixed(3));
         const [rx, ry, rz] = this.rotation.map(v => v.toFixed(4));
@@ -35,7 +35,7 @@ export class MappingBlock {
 `
     // MAPPING UV: ${this.name}
     vec3 ${this.name} = vec3(vUv * vec2(${sx2},${sy2}) + vec2(${ox2},${oy2}), 0.0);
-    
+
 `;
         }
 
