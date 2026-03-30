@@ -1,0 +1,1 @@
+import{M as a,C as i}from"./connection-DBwQBGfk.js";import{W as r}from"./woodGrain-DdSi0Xii.js";function c(){const o=new a("mapping",{scale:[1,1,1],offset:[0,0,0],rotation:[0,0,0],mode:"local"}),n=new r("woodGrain",{input:"mapping",scale:2.5,distortion:2,noiseScale:.25}),t=new i("output",{color:"woodGrain",roughness:"woodGrain",metal:0});return[o,n,t]}export{c as getGraph};
