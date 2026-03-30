@@ -11,13 +11,8 @@ export class MixBlock {
         this.mode = mode;
         this.factor = factor;
     }
-
-    generateCode() {
-    const f = typeof this.factor === "string"
-        ? this.factor
-        : this.factor.toFixed(2);
-
-    const globals =
+    generateCodeGlobal() {
+        const codeGlobal =
 `// MIX GLOBAL:
 vec3 mixModes(vec3 a, vec3 b, float factor, int mode){
     if(mode == 0){ return mix(a, min(a,b), factor); }   // darken
@@ -28,7 +23,16 @@ vec3 mixModes(vec3 a, vec3 b, float factor, int mode){
     if(mode == 5){ return mix(a, clamp(a + 2.0*b - 1.0, 0.0, 1.0), factor); } // linear light
     return mix(a, b, factor); // default: mix
 }
+
 `;
+        return codeGlobal;
+    }
+
+    generateCodeMain() {
+        const f = typeof this.factor === "string"
+            ? this.factor
+            : this.factor.toFixed(2);
+
 
         // map string mode -> int
         const modeMap = {
@@ -43,11 +47,12 @@ vec3 mixModes(vec3 a, vec3 b, float factor, int mode){
         const modeInt = modeMap[this.mode] ?? 6;
 
         // mainCode
-        const mainCode =
+        let codeMain =
 `    // MIX MAIN: ${this.name}, ${this.mode} mode
-    vec3 ${this.name} = mixModes(${this.inputA}, ${this.inputB}, ${f}, ${modeInt});`;
-
-        return { globals, mainCode };
+    vec3 ${this.name} = mixModes(${this.inputA}, ${this.inputB}, ${f}, ${modeInt});
+    
+`;
+        return codeMain;
     }
 }
 

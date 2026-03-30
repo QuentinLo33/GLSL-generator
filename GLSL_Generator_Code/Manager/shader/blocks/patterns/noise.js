@@ -20,14 +20,14 @@ export class NoiseBlock {
         this.mode = mode;
     }
 
-    generateCode() {
+    generateCodeGlobal() {
         const s = this.scale.toFixed(2);
         const d = this.detail;
         const r = this.roughness.toFixed(2);
         const l = this.lacunarity.toFixed(2);
         const dist = this.distortion.toFixed(2);
 
-        const globals =
+        let codeGlobal =
 `// NOISE GLOBAL:
 vec3 mod289(vec3 x){return x - floor(x/289.0)*289.0;}
 vec4 mod289(vec4 x){return x - floor(x/289.0)*289.0;}
@@ -118,22 +118,25 @@ vec3 getNoise_heteroTerrain(vec3 pos, int detail, float scale, float roughness, 
 }
 
 `;
+        return codeGlobal;
+    }
 
+    generateCodeMain() {
         // Map mode → fonction GLSL
-    const fnMap = {
-        "fBm":           "getNoise_fBm",
-        "heteroTerrain": "getNoise_heteroTerrain",
-        "billowy":       "getNoise_billowy",
-        "domainWarping": "getNoise_domainWarping",
-    };
+        const fnMap = {
+            "fBm":           "getNoise_fBm",
+            "heteroTerrain": "getNoise_heteroTerrain",
+            "billowy":       "getNoise_billowy",
+            "domainWarping": "getNoise_domainWarping",
+        };
         const fn = fnMap[this.mode] ?? "getNoise_fBm";
 
-        const mainCode =
+        let codeMain =
 `    // NOISE MAIN: ${this.name} [${this.mode}]
     vec3 ${this.name} = ${fn}(${this.input}, ${d}, ${s}, ${r}, ${l}, ${dist}, ${this.normalized ? "true" : "false"});
+    
 `;
-
-        return { globals, mainCode };
+        return codeMain;
     }
 }
 

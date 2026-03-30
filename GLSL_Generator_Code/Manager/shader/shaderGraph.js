@@ -30,112 +30,10 @@ export class ShaderGraph {
     }
 
     generateShaderStrings() {
-        let globals = "";
-        let mainCode = "";
+        vertexShader = this.generateFragmentGlobal();
 
-        const globalsSet = new Set();
-        let connectionBlock = null;
-        let noiseBlock = false;
-
-        // ── Check for the noise ────────────────────────────
-        const needsSnoiseBlocks = ["WaveBlock", "WoodGrainBlock"];
-        const hasBlockNeedingSnoise = this.blocks.some(b => 
-            needsSnoiseBlocks.includes(b.constructor.name)
-        );
-        const hasNoiseBlock = this.blocks.some(b => 
-            b.constructor.name === "NoiseBlock"
-        );
-
-        // import noise if wave or grain wood without
-        if (hasBlockNeedingSnoise && !hasNoiseBlock) {
-            const tmpNoise = new NoiseBlock("_tmp", { normalized: false });
-            const tmpCode = tmpNoise.generateCode().globals;
-            globalsSet.add(tmpCode);
-            globals += tmpCode + "\n";
-            noiseBlock = true;
-        }
-        else if (hasBlockNeedingSnoise) {
-            const firstNoise = this.blocks.find(b => b.constructor.name === "NoiseBlock");
-            if (firstNoise) {
-                const noiseCode = firstNoise.generateCode().globals;
-                globalsSet.add(noiseCode);
-                globals += noiseCode + "\n";
-                noiseBlock = true;
-            }
-        }
-
-        // import everything
-        for (const block of this.blocks) {
-            const code = block.generateCode();
-
-            if (code.globals && !globalsSet.has(code.globals)) {
-                globalsSet.add(code.globals);
-                globals += code.globals + "\n";
-            }
-
-            if (code.mainCode) {
-                mainCode += code.mainCode + "\n";
-            }
-
-            if (block.constructor.name === "ConnectionBlock") connectionBlock = block;
-            if (block.constructor.name === "NoiseBlock") noiseBlock = true;
-        }
-
-        if (connectionBlock) {
-            const connections = connectionBlock.connections || {};
-            const colorVar     = resolveConnection(connections.color     || "vec3(1.0)");
-            const bumpVar      = resolveConnection(connections.bump      || "vec3(0.0)");
-            const roughnessRaw = resolveConnection(connections.roughness || "0.5");
-            const metallicRaw  = resolveConnection(connections.metallic  || "0.0");
-
-            const isNumber = (v) => !isNaN(parseFloat(v)) && isFinite(v);
-            const roughnessVar = isNumber(roughnessRaw) ? roughnessRaw : roughnessRaw + ".r";
-            const metallicVar  = isNumber(metallicRaw)  ? metallicRaw  : metallicRaw  + ".r";
-
-            mainCode +=
-`    // Define final outputs with connection
-    vec3 finalColor = ${colorVar};
-    vec3 finalBump = ${bumpVar};
-    float finalRoughness = ${roughnessVar};
-    float finalMetallic = ${metallicVar};
-    `;
-        } else {
-            mainCode +=
-`    // Define final outputs
-    vec3 finalColor = ${this.blocks[this.blocks.length - 1].name};
-    vec3 finalBump = vec3(0.0);
-    float finalRoughness = 0.5;
-    float finalMetallic = 0.0;
-    `;
-        }
-
-        vertexShader = `
-// ==================
-// Vertex Shader
-// ==================
-
-varying vec3 vNormal;
-varying vec3 vPosition;
-varying vec2 vUv;
-varying vec3 vWorldPosition;
-varying vec3 vViewPosition;
-
-void main() {
-    vec4 worldPos = modelMatrix * vec4(position, 1.0);
-    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-
-    vWorldPosition = worldPos.xyz;
-    vViewPosition = mvPosition.xyz;
-    vNormal = normalize(normalMatrix * normal);
-
-    vPosition = position;
-    vUv = uv;
-
-    gl_Position = projectionMatrix * mvPosition;
-}
-
-        `;
-
+        fragmentGlobal = this.generateFragmentGlobal;
+        fragmentMain = this.generateFragmentMain;
         fragmentShader = `
 // ==================
 // Fragment Shader
@@ -158,11 +56,11 @@ uniform vec3 uEnvLight;
 uniform vec3 uEnvFill;
 uniform vec3 uEnvGround;
 
-${globals}
+${fragmentGlobal}
 
 void main() {
 
-${mainCode}
+${fragmentMain}
 
     vec3 N;
     #ifdef USE_UV_MAPPING
@@ -218,6 +116,128 @@ ${mainCode}
         return { vertexShader, fragmentShader };
     }
 
+
+    generateVertex() {
+
+        vertexShader = `
+// ==================
+// Vertex Shader
+// ==================
+
+varying vec3 vNormal;
+varying vec3 vPosition;
+varying vec2 vUv;
+varying vec3 vWorldPosition;
+varying vec3 vViewPosition;
+
+void main() {
+    vec4 worldPos = modelMatrix * vec4(position, 1.0);
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+
+    vWorldPosition = worldPos.xyz;
+    vViewPosition = mvPosition.xyz;
+    vNormal = normalize(normalMatrix * normal);
+
+    vPosition = position;
+    vUv = uv;
+
+    gl_Position = projectionMatrix * mvPosition;
+}
+
+        `;
+        return vertexShader;
+    }
+
+    generateFragmentGlobal() {
+ let globals = "";
+        let mainCode = "";
+
+        const globalsSet = new Set();
+        let connectionBlock = null;
+        let noiseBlock = false;
+
+        // ── Check for the noise ────────────────────────────
+        const needsSnoiseBlocks = ["WaveBlock", "WoodGrainBlock"];
+        const hasBlockNeedingSnoise = this.blocks.some(b => 
+            needsSnoiseBlocks.includes(b.constructor.name)
+        );
+        const hasNoiseBlock = this.blocks.some(b => 
+            b.constructor.name === "NoiseBlock"
+        );
+
+        // import noise if wave or grain wood without
+        if (hasBlockNeedingSnoise && !hasNoiseBlock) {
+            const tmpNoise = new NoiseBlock("_tmp", { normalized: false });
+            const tmpCode = tmpNoise.generateCode().globals;
+            globalsSet.add(tmpCode);
+            globals += tmpCode + "\n";
+            noiseBlock = true;
+        }
+        else if (hasBlockNeedingSnoise) {
+            const firstNoise = this.blocks.find(b => b.constructor.name === "NoiseBlock");
+            if (firstNoise) {
+                const noiseCode = firstNoise.generateCode().globals;
+                globalsSet.add(noiseCode);
+                globals += noiseCode + "\n";
+                noiseBlock = true;
+            }
+        }
+
+        // import everything
+        for (const block of this.blocks) {
+            const code = block.generateCodeGlobals();
+
+            if (code.globals && !globalsSet.has(code.globals)) {
+                globalsSet.add(code.globals);
+                globals += code.globals + "\n";
+            }
+            if (block.constructor.name === "NoiseBlock") noiseBlock = true;
+        }
+
+        return fragmentGlobal;
+    }
+
+    generateFragmentMain() {
+        let fragmentMain = "";
+        let connectionBlock = null;
+
+        for (const block of this.blocks) {
+            mainCode += block.generateCodeMain();
+            if (block.constructor.name === "ConnectionBlock") connectionBlock = block;
+        }
+
+        if (connectionBlock) {
+            const connections = connectionBlock.connections || {};
+            const colorVar     = resolveConnection(connections.color     || "vec3(1.0)");
+            const bumpVar      = resolveConnection(connections.bump      || "vec3(0.0)");
+            const roughnessRaw = resolveConnection(connections.roughness || "0.5");
+            const metallicRaw  = resolveConnection(connections.metallic  || "0.0");
+
+            const isNumber = (v) => !isNaN(parseFloat(v)) && isFinite(v);
+            const roughnessVar = isNumber(roughnessRaw) ? roughnessRaw : roughnessRaw + ".r";
+            const metallicVar  = isNumber(metallicRaw)  ? metallicRaw  : metallicRaw  + ".r";
+
+            mainCode +=
+`    // Define final outputs with connection
+    vec3 finalColor = ${colorVar};
+    vec3 finalBump = ${bumpVar};
+    float finalRoughness = ${roughnessVar};
+    float finalMetallic = ${metallicVar};
+    `;
+        }
+        else {
+            mainCode +=
+`    // Define final outputs
+    vec3 finalColor = ${this.blocks[this.blocks.length - 1].name};
+    vec3 finalBump = vec3(0.0);
+    float finalRoughness = 0.5;
+    float finalMetallic = 0.0;
+    `;
+        }
+
+        return fragmentMain;
+    }
+    
     createMaterial(camera, light) {
         const { vertexShader, fragmentShader } = this.generateShaderStrings();
         const { envLight, envFill, envGround } = getEnvColors();

@@ -16,14 +16,8 @@ export class MapRange {
         this.mode = mode;
     }
 
-generateCode() {
-
-const fromMin = this.fromMin.toFixed(3);
-const fromMax = this.fromMax.toFixed(3);
-const toMin = this.toMin.toFixed(3);
-const toMax = this.toMax.toFixed(3);
-
-const globals =
+generateCodeGlobal () {
+    let codeGlobal =
 `// MAP RANGE GLOBAL:
 
 float mapRange(float value, float inMin, float inMax, float outMin, float outMax){
@@ -37,6 +31,15 @@ float smootherstep(float edge0, float edge1, float x){
 }
 
 `;
+    return codeGlobal;
+}
+
+
+generateCodeMain () {
+    const fromMin = this.fromMin.toFixed(3);
+    const fromMax = this.fromMax.toFixed(3);
+    const toMin = this.toMin.toFixed(3);
+    const toMax = this.toMax.toFixed(3);
 
     let mapped;
 
@@ -59,13 +62,11 @@ float smootherstep(float edge0, float edge1, float x){
         mapped = `mapRange(${this.input}, ${fromMin}, ${fromMax}, ${toMin}, ${toMax})`;
     }
 
-    const mainCode =
+    let codeMain =
 `    // MAP RANGE MAIN: ${this.name} (${this.mode})
     vec3 ${this.name} = vec3(${mapped});
 
 `;
-
-return { globals, mainCode };
-
+    return codeMain;
 }
 }
