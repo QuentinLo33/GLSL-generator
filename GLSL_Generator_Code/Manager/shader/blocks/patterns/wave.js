@@ -25,13 +25,6 @@ export class WaveBlock {
     }
 
     generateCodeGlobal() {
-        const s = this.scale.toFixed(2);
-        const dist = this.distortion.toFixed(2);
-        const d = this.detail;
-        const dS = this.detailScale.toFixed(2);
-        const dR = this.detailRoughness.toFixed(2);
-        const phase = this.phase.toFixed(2);
-
         let codeGlobal = `
 // WAVE GLOBAL:
 float waveFunc(float x, int type){
@@ -52,6 +45,13 @@ float waveFunc(float x, int type){
     }
 
     generateCodeMain() {
+        const s = this.scale.toFixed(2);
+        const dist = this.distortion.toFixed(2);
+        const d = this.detail;
+        const dS = this.detailScale.toFixed(2);
+        const dR = this.detailRoughness.toFixed(2);
+        const phase = this.phase.toFixed(2);
+
         // type GLSL index : 0=sine,1=triangle,2=saw
         const typeIndex = this.type === "sine" ? 0 : this.type === "triangle" ? 1 : 2;
 

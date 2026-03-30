@@ -21,12 +21,6 @@ export class NoiseBlock {
     }
 
     generateCodeGlobal() {
-        const s = this.scale.toFixed(2);
-        const d = this.detail;
-        const r = this.roughness.toFixed(2);
-        const l = this.lacunarity.toFixed(2);
-        const dist = this.distortion.toFixed(2);
-
         let codeGlobal =
 `// NOISE GLOBAL:
 vec3 mod289(vec3 x){return x - floor(x/289.0)*289.0;}
@@ -122,6 +116,13 @@ vec3 getNoise_heteroTerrain(vec3 pos, int detail, float scale, float roughness, 
     }
 
     generateCodeMain() {
+        const s = this.scale.toFixed(2);
+        const d = this.detail;
+        const r = this.roughness.toFixed(2);
+        const l = this.lacunarity.toFixed(2);
+        const dist = this.distortion.toFixed(2);
+
+
         // Map mode → fonction GLSL
         const fnMap = {
             "fBm":           "getNoise_fBm",
@@ -134,7 +135,7 @@ vec3 getNoise_heteroTerrain(vec3 pos, int detail, float scale, float roughness, 
         let codeMain =
 `    // NOISE MAIN: ${this.name} [${this.mode}]
     vec3 ${this.name} = ${fn}(${this.input}, ${d}, ${s}, ${r}, ${l}, ${dist}, ${this.normalized ? "true" : "false"});
-    
+
 `;
         return codeMain;
     }

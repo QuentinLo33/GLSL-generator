@@ -23,13 +23,6 @@ export class VoronoiBlock {
     }
 
     generateCodeGlobal() {
-
-        const s = this.scale.toFixed(2);
-        const d = this.detail;
-        const r = this.roughness.toFixed(2);
-        const l = this.lacunarity.toFixed(2);
-        const rand = this.randomness.toFixed(2);
-
         let codeGlobal = `
 // VORONOI GLOBALS (with modes: F1, F2, F2-F1, F1+F2)
 vec3 hash33(vec3 p){
@@ -91,12 +84,18 @@ vec3 getVoronoi(vec3 pos, int detail, float scale, float roughness, float lacuna
     value /= maxValue;
     return vec3(value);
 }
-    
+
 `;
         return codeGlobal;
     }
 
     generateCodeMain() {
+        const s = this.scale.toFixed(2);
+        const d = this.detail;
+        const r = this.roughness.toFixed(2);
+        const l = this.lacunarity.toFixed(2);
+        const rand = this.randomness.toFixed(2);
+
         // Map metric string to GLSL integer
         let metricIndex = 0;
         if(this.metric==="manhattan") metricIndex = 1;

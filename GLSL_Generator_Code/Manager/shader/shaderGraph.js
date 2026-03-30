@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { getAmbientInputColor, getEnvColors } from "../ui";
 import { NoiseBlock } from "./blocks/patterns/noise";
+import { colorRampGlobalCode } from "./blocks/operators/colorRampGlobal";
 
 // Ajoute cette fonction helper en haut de ShaderGraph.js
 function hexToVec3(hex) {
@@ -22,7 +23,8 @@ function resolveConnection(value) {
 
 export let vertexShader="";
 export let fragmentShader="";
-
+let fragmentMain ="";
+let fragmentGlobal
 export class ShaderGraph {
     constructor(blocks = [], outputVar = "finalColor") {
         this.blocks = blocks;
@@ -30,10 +32,14 @@ export class ShaderGraph {
     }
 
     generateShaderStrings() {
-        vertexShader = this.generateFragmentGlobal();
+        this.generateVertex();
+        this.generateFragmentGlobal();
+        this.generateFragmentMain();
+        this.generateFullCode();
+        return { vertexShader, fragmentShader };
+    }
 
-        fragmentGlobal = this.generateFragmentGlobal;
-        fragmentMain = this.generateFragmentMain;
+    generateFullCode() {
         fragmentShader = `
 // ==================
 // Fragment Shader
@@ -111,11 +117,8 @@ ${fragmentMain}
 
     gl_FragColor = vec4(ambient + diffuse + specular + envReflect, 1.0);
 }
-    `;
-
-        return { vertexShader, fragmentShader };
+`;
     }
-
 
     generateVertex() {
 
@@ -149,60 +152,56 @@ void main() {
     }
 
     generateFragmentGlobal() {
- let globals = "";
-        let mainCode = "";
-
+        fragmentGlobal = "";
         const globalsSet = new Set();
-        let connectionBlock = null;
-        let noiseBlock = false;
 
-        // ── Check for the noise ────────────────────────────
+        // ── Snoise si nécessaire ──────────────────────────────
         const needsSnoiseBlocks = ["WaveBlock", "WoodGrainBlock"];
-        const hasBlockNeedingSnoise = this.blocks.some(b => 
-            needsSnoiseBlocks.includes(b.constructor.name)
-        );
-        const hasNoiseBlock = this.blocks.some(b => 
-            b.constructor.name === "NoiseBlock"
-        );
+        const hasBlockNeedingSnoise = this.blocks.some(b => needsSnoiseBlocks.includes(b.constructor.name));
+        const hasNoiseBlock = this.blocks.some(b => b.constructor.name === "NoiseBlock");
 
-        // import noise if wave or grain wood without
         if (hasBlockNeedingSnoise && !hasNoiseBlock) {
             const tmpNoise = new NoiseBlock("_tmp", { normalized: false });
-            const tmpCode = tmpNoise.generateCode().globals;
+            const tmpCode = tmpNoise.generateCodeGlobal();
             globalsSet.add(tmpCode);
-            globals += tmpCode + "\n";
-            noiseBlock = true;
-        }
-        else if (hasBlockNeedingSnoise) {
+            fragmentGlobal += tmpCode + "\n";
+        } else if (hasBlockNeedingSnoise) {
             const firstNoise = this.blocks.find(b => b.constructor.name === "NoiseBlock");
             if (firstNoise) {
-                const noiseCode = firstNoise.generateCode().globals;
+                const noiseCode = firstNoise.generateCodeGlobal();
                 globalsSet.add(noiseCode);
-                globals += noiseCode + "\n";
-                noiseBlock = true;
+                fragmentGlobal += noiseCode + "\n";
             }
         }
 
-        // import everything
+        // ── ColorRampBlock : assigne les instanceId + émet le global partagé ────
+        const colorRamps = this.blocks.filter(b => b.constructor.name === "ColorRampBlock");
+        if (colorRamps.length > 0) {
+            const maxStops = Math.max(...colorRamps.map(b => b.positions.length));
+            if (maxStops > 0) {
+                colorRamps.forEach((b, i) => b.instanceId = i); // assignation ici
+                fragmentGlobal += colorRampGlobalCode(colorRamps.length, maxStops);
+            }
+        }
+
+        // ── Tous les autres blocks ────────────────────────────
         for (const block of this.blocks) {
-            const code = block.generateCodeGlobals();
+            if (block.constructor.name === "ColorRampBlock") continue;
 
-            if (code.globals && !globalsSet.has(code.globals)) {
-                globalsSet.add(code.globals);
-                globals += code.globals + "\n";
+            const code = block.generateCodeGlobal();
+            if (code && !globalsSet.has(code)) {
+                globalsSet.add(code);
+                fragmentGlobal += code;
             }
-            if (block.constructor.name === "NoiseBlock") noiseBlock = true;
         }
-
-        return fragmentGlobal;
     }
 
     generateFragmentMain() {
-        let fragmentMain = "";
+        fragmentMain = "";
         let connectionBlock = null;
 
         for (const block of this.blocks) {
-            mainCode += block.generateCodeMain();
+            fragmentMain += block.generateCodeMain();
             if (block.constructor.name === "ConnectionBlock") connectionBlock = block;
         }
 
@@ -217,7 +216,7 @@ void main() {
             const roughnessVar = isNumber(roughnessRaw) ? roughnessRaw : roughnessRaw + ".r";
             const metallicVar  = isNumber(metallicRaw)  ? metallicRaw  : metallicRaw  + ".r";
 
-            mainCode +=
+            fragmentMain +=
 `    // Define final outputs with connection
     vec3 finalColor = ${colorVar};
     vec3 finalBump = ${bumpVar};
@@ -226,7 +225,7 @@ void main() {
     `;
         }
         else {
-            mainCode +=
+            fragmentMain +=
 `    // Define final outputs
     vec3 finalColor = ${this.blocks[this.blocks.length - 1].name};
     vec3 finalBump = vec3(0.0);
@@ -234,27 +233,55 @@ void main() {
     float finalMetallic = 0.0;
     `;
         }
-
-        return fragmentMain;
     }
     
     createMaterial(camera, light) {
         const { vertexShader, fragmentShader } = this.generateShaderStrings();
         const { envLight, envFill, envGround } = getEnvColors();
+
+        const colorRamps = this.blocks.filter(b => b.constructor.name === "ColorRampBlock");
+        const maxStops   = colorRamps.length > 0 ? Math.max(...colorRamps.map(b => b.positions.length)) : 1;
+        const total      = colorRamps.length * maxStops;
+        const modeMap    = { linear: 0, smooth: 1, constant: 2 };
+
+        // Remplir les flat arrays
+        const posArr    = new Float32Array(total);
+        const colorArr  = new Float32Array(total * 3);
+        const countArr  = new Int32Array(colorRamps.length);
+        const modeArr   = new Int32Array(colorRamps.length);
+
+        colorRamps.forEach((ramp, i) => {
+            const offset = i * maxStops;
+            countArr[i]  = ramp.positions.length;
+            modeArr[i]   = modeMap[ramp.mode] ?? 0;
+            ramp.positions.forEach((p, j) => posArr[offset + j] = p);
+            ramp.colors.forEach((c, j) => {
+                colorArr[(offset + j) * 3 + 0] = c[0] / 255;
+                colorArr[(offset + j) * 3 + 1] = c[1] / 255;
+                colorArr[(offset + j) * 3 + 2] = c[2] / 255;
+            });
+        });
+
         const material = new THREE.ShaderMaterial({
             vertexShader,
             fragmentShader,
             uniforms: {
-                uLightColor:  { value: new THREE.Color(1, 1, 1) },
-                uLightPos:    { value: new THREE.Vector3(3, 3, 2) },
-                uCameraPos:   { value: camera.position.clone() }, // clone to avoid issue with reference
-                uAmbientColor:{ value: getAmbientInputColor() },
-                uEnvLight:  { value: envLight.clone() },
-                uEnvFill:   { value: envFill.clone() },
-                uEnvGround: { value: envGround.clone() }
+                uLightColor:    { value: new THREE.Color(1, 1, 1) },
+                uLightPos:      { value: new THREE.Vector3(3, 3, 2) },
+                uCameraPos:     { value: camera.position.clone() },
+                uAmbientColor:  { value: getAmbientInputColor() },
+                uEnvLight:      { value: envLight.clone() },
+                uEnvFill:       { value: envFill.clone() },
+                uEnvGround:     { value: envGround.clone() },
+                // Color ramp uniforms
+                ramp_count:     { value: countArr },
+                ramp_mode:      { value: modeArr },
+                ramp_positions: { value: posArr },
+                ramp_colors:    { value: colorArr },
             },
             extensions: { derivatives: true }
         });
+
         return material;
     }
 }
