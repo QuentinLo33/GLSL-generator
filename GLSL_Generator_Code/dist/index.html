@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shader Generator</title>
+  <script type="module" crossorigin src="/assets/index-gcFTjtzF.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-NhyKGck5.css">
+</head>
+
+<body>
+
+    <div id="left-column">
+        <h2>Shader</h2>
+
+        <label>Material type</label>
+        <select id="material-category">
+            <option value="metal">Metal</option>
+            <option value="wood">Wood</option>
+            <option value="cloth">Cloth</option>
+            <option value="mineral">Mineral</option>
+            <option value="synthetic">Synthetic</option>
+            <option value="pattern">Patterns</option>
+        </select>
+
+        <label>Subtype</label>
+        <select id="material-subcategory"></select>
+    </div>
+    <div id="resizer-left"></div>
+
+
+    <div id="central-column">
+        <div id="scene-container"></div>
+        <div id="resizer-horizontal"></div>
+
+        <div id="bottom-panel">
+            <h3>Scene Settings</h3>
+
+            <label>Background Color</label>
+            <input type="color" id="bg-color" value="#000000">
+
+            <label>Model</label>
+            <select id="model-select">
+                <option value="cube">Cube</option>
+                <option value="sphere">Sphere</option>s
+                <option value="cylinder">Cylinder</option>
+                <option value="torus">Torus</option>
+                <option value="Teapot">Teapot</option>
+                <option value="Suzanne">Suzanne</option>
+                <option value="Rock">Rock</option>
+                <option value="Cloth">Cloth</option>
+                <option value="Gear">Gear</option>
+            </select>
+
+            <label>Ambient</label>
+            <input type="color" id="ambient-color" value="#aaaaaa">
+
+            <div class="settings-block">
+                <div class="settings-environment">
+                    <button class="toggle-environment">Environment Reflection (Metal)</button>
+                </div>
+                <div class="environment-content">
+                    <label>Direct</label>
+                    <input type="color" id="env-light" value="#ffffff">
+
+                    <label>Fill</label>
+                    <input type="color" id="env-fill" value="#999aa6">
+
+                    <label>Ground</label>
+                    <input type="color" id="env-ground" value="#1a1a1a">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="resizer-right"></div>
+    <div id="right-column">
+        <h2>GLSL Preview</h2>
+
+        <div class="glsl-block">
+            <div class="glsl-header">
+                <button class="glsl-toggle">Vertex Shader</button>
+                <button class="glsl-download" title="Télécharger">&#128190;</button>
+            </div>
+            <textarea class="glsl-code" readonly></textarea>
+        </div>
+
+        <div class="glsl-block">
+            <div class="glsl-header">
+                <button class="glsl-toggle">Fragment Shader</button>
+                <button class="glsl-download" title="Télécharger">&#128190;</button>
+            </div>
+            <textarea class="glsl-code" readonly></textarea>
+        </div>
+
+        <div class="glsl-block">
+            <div class="glsl-header">
+                <button class="glsl-toggle">All in one file</button>
+                <button class="glsl-download" title="Télécharger">&#128190;</button>
+            </div>
+            <textarea class="glsl-code" readonly></textarea>
+        </div>
+        <div id="glsl-header-all" style="display:flex; justify-content:center; margin-bottom:10px;">
+            <button id="download-all" class="glsl-download" title="Télécharger tous les shaders">
+                Download each file &#128190;
+            </button>
+        </div>
+    </div>
+
+
+
+</body>
+
+</html>

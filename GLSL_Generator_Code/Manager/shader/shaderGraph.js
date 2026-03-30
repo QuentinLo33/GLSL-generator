@@ -29,17 +29,21 @@ export class ShaderGraph {
     constructor(blocks = [], outputVar = "finalColor") {
         this.blocks = blocks;
         this.outputVar = outputVar;
+        this.generateVertex();
     }
 
-    generateShaderStrings() {
-        this.generateVertex();
-        this.generateFragmentGlobal();
+    generateShaderStrings(fullUptate = true) {
+        if (fullUptate)
+        {
+            this.generateFragmentGlobal();
+
+        }
         this.generateFragmentMain();
-        this.generateFullCode();
+        this.generateFullFragment();
         return { vertexShader, fragmentShader };
     }
 
-    generateFullCode() {
+    generateFullFragment() {
         fragmentShader = `
 // ==================
 // Fragment Shader
