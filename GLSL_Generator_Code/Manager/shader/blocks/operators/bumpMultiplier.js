@@ -7,16 +7,17 @@ export class BumpMultiplierBlock {
         this.input = input;
         this.factor = factor;
     }
-
-    generateCode() {
-        return {
-            globals: "",
-            mainCode:
+    
+    generateCodeGlobal() {
+        return "";
+    } 
+    generateCodeMain() {
+        let codeMain =
 `    // BUMP MAIN: ${this.name}
     vec3 ${this.name} = ${this.input} * ${this.factor.toFixed(2)};
     
-    `
-        };
+`;
+    return codeMain;
     }
 }
 

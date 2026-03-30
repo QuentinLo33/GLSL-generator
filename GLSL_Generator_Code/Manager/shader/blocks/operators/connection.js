@@ -12,11 +12,12 @@ export class ConnectionBlock {
 
     }
 
-    generateCode() {
-        return {
-            globals: "",
-            mainCode: ""
-        };
+    generateCodeGlobal() {
+        return "";
+    }
+
+    generateCodeMain() {
+        return "";
     }
 }
 

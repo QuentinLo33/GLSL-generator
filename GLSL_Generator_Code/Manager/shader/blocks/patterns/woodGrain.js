@@ -12,12 +12,12 @@ export class WoodGrainBlock {
         this.noiseScale = noiseScale;
     }
 
-    generateCode() {
+    generateCodeGlobal() {
         const s = this.scale.toFixed(2);
         const dist = this.distortion.toFixed(2);
         const ns = this.noiseScale.toFixed(2);
 
-        const globals = `
+        let codeGlobal = `
     // WOOD GRAIN GLOBAL:
     float getWoodGrain(vec3 pos, float scale, float distortion, float noiseScale) {
         
@@ -34,16 +34,18 @@ export class WoodGrainBlock {
         return grain * 0.5 + 0.5;
     }
 
-    `;
+`;
+        return codeGlobal;
+    }
 
-        const mainCode = `
+    generateCodeMain() {
+        let codeMain= `
         // WOOD GRAIN MAIN: ${this.name}
         float ${this.name}_raw = getWoodGrain(${this.input}, ${s}, ${dist}, ${ns});
         vec3 ${this.name} = vec3(${this.name}_raw);
         
-    `;
-
-        return { globals, mainCode };
+`;
+        return codeMain;
     }
 }
 

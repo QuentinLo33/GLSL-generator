@@ -24,7 +24,7 @@ export class WaveBlock {
         this.phase = phase;
     }
 
-    generateCode() {
+    generateCodeGlobal() {
         const s = this.scale.toFixed(2);
         const dist = this.distortion.toFixed(2);
         const d = this.detail;
@@ -32,7 +32,7 @@ export class WaveBlock {
         const dR = this.detailRoughness.toFixed(2);
         const phase = this.phase.toFixed(2);
 
-        const globals = `
+        let codeGlobal = `
 // WAVE GLOBAL:
 float waveFunc(float x, int type){
     // Sin
@@ -45,17 +45,22 @@ float waveFunc(float x, int type){
     else if(type == 2) return fract(x / 6.2831853) * 2.0 - 1.0; // saw
     return sin(x);
 }
+
 `;
 
+        return codeGlobal;
+    }
+
+    generateCodeMain() {
         // type GLSL index : 0=sine,1=triangle,2=saw
         const typeIndex = this.type === "sine" ? 0 : this.type === "triangle" ? 1 : 2;
 
         // choisir la composante selon l'axe
         const axisComp = this.axis === "X" ? "pos.x" : this.axis === "Y" ? "pos.y" : "pos.z";
 
-const prefix = this.name + "_";
+        const prefix = this.name + "_";
 
-const mainCode = 
+        let codeMain = 
 `
     vec3 ${prefix}pos = ${this.input} * ${s};
     ${prefix}pos += snoise(${this.input} * ${dist}) * ${dist};
@@ -77,9 +82,8 @@ const mainCode =
 
     vec3 ${this.name} = vec3(${prefix}value);
 
-    `;
-
-        return { globals, mainCode };
+`;
+        return codeMain;
     }
 }
 

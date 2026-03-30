@@ -131,3 +131,24 @@ export function getGraph() {
         output
     ];
 }
+
+/*
+{
+    Pattern:
+        {
+            nom variable: {variable par default, type, plage de valeur}
+            nom variable: {variable par default, type, plage de valeur}
+        }
+
+    Color:
+        {
+            nom variable: {variable par default, type, plage de valeur}
+            nom variable: {variable par default, type, plage de valeur}
+        }
+    Bump
+        {
+            nom variable: {variable par default, type, plage de valeur}
+            nom variable: {variable par default, type, plage de valeur}
+        }
+}
+*/
