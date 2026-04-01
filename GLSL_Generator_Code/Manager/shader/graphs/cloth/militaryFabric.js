@@ -33,7 +33,7 @@ export function getGraph() {
         inputA: "mappingUV",
         inputB: "noiseDeformation",
         mode: "mix",
-        factor: 0.05
+        factor: 0.5
     });
 
     // ── Weaving ──────────────────────────────────────────────────────────────
