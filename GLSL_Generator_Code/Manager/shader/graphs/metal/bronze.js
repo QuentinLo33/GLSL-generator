@@ -76,3 +76,94 @@ export function getGraph() {
         output
     ];
 }
+
+
+// bronze.js
+export function getParams() {
+  return {
+    "Pattern": [
+      {
+        label: "Scale",
+        targets: [
+          { block: "mapping", prop: "scale",      transform: v => [v, v, v] },
+          { block: "noise",   prop: "scale",      transform: v => v * 2     }
+        ],
+        type: "range",
+        min: 0.5, max: 5, step: 0.1,
+        default: 1.3
+      },
+      {
+        label: "Detail",
+        targets: [{ block: "noise", prop: "detail" }],
+        type: "int",
+        min: 1, max: 16,
+        default: 4
+      },
+      {
+        label: "Distortion",
+        targets: [{ block: "noise", prop: "distortion" }],
+        type: "range",
+        min: 0, max: 2, step: 0.01,
+        default: 0.0
+      }
+    ],
+
+    "Surface": [
+      {
+        label: "Roughness min",
+        targets: [{ block: "roughness", prop: "toMin" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.05
+      },
+      {
+        label: "Roughness max",
+        targets: [{ block: "roughness", prop: "toMax" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.25
+      },
+      {
+        label: "Metallic",
+        targets: [{ block: "output", prop: "metallic" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.98
+      },
+      {
+        label: "Bump strength",
+        targets: [{ block: "bump", prop: "factor" }],
+        type: "range",
+        min: 0, max: 0.5, step: 0.005,
+        default: 0.08
+      }
+    ],
+
+    "Base Color": [
+      {
+        label: "Shadow",
+        targets: [{ block: "colorRamp", prop: "colors", index: 0 }],
+        type: "color",
+        default: [120, 60, 15]
+      },
+      {
+        label: "Low surface",
+        targets: [{ block: "colorRamp", prop: "colors", index: 1 }],
+        type: "color",
+        default: [185, 105, 38]
+      },
+      {
+        label: "Highlight",
+        targets: [{ block: "colorRamp", prop: "colors", index: 2 }],
+        type: "color",
+        default: [215, 140, 55]
+      },
+      {
+        label: "Peak",
+        targets: [{ block: "colorRamp", prop: "colors", index: 3 }],
+        type: "color",
+        default: [235, 168, 68]
+      }
+    ]
+  };
+}
