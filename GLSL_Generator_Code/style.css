@@ -1,4 +1,35 @@
 /* ---------------------------
+   Design tokens (global theme)
+   --------------------------- */
+:root {
+    /* Colors */
+    --bg: #111;
+    --panel: #1a1a1a;
+    --panel-light: #1f1f1f;
+    --panel-dark: #161616;
+
+    --border: #333;
+    --border-strong: #444;
+
+    --text: #eee;
+    --text-accent: #ffdd99;
+
+    --orange: #ff7519;
+    --orange-light: #ffaa33;
+    --blue: #61afff;
+
+    /* Radius */
+    --r-sm: 4px;
+    --r-md: 6px;
+    --r-lg: 8px;
+
+    /* Spacing */
+    --s-sm: 4px;
+    --s-md: 10px;
+    --s-lg: 15px;
+}
+
+/* ---------------------------
    Main
    --------------------------- */
 * {
@@ -12,30 +43,37 @@ body {
     display: flex;
     overflow: hidden;
     font-family: "Arial", sans-serif;
-    background: #111;
-    color: #eee;
+    background: var(--bg);
+    color: var(--text);
 }
 
+/* ---------------------------
+   Panel base (reusable)
+   --------------------------- */
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 12px;
+}
 
 /* ---------------------------
    Left part: Shader selection
-   --------------------------- */ 
-/* Left column */
+   --------------------------- */
 #left-column {
     width: 400px;
     min-width: 150px;
-    background: #1a1a1a;
-    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    border-right: 2px solid #333;
+    gap: var(--s-lg);
+    border-right: 2px solid var(--border);
     overflow-y: auto;
+    padding: 12px;
 }
 
 /* Title column */
 #left-column h2 {
-    color: #ff7519;
+    color: var(--orange);
     margin-bottom: 10px;
 }
 
@@ -43,66 +81,63 @@ body {
 #left-column label {
     font-size: 16px;
     font-weight: bold;
-    color: #ffaa33;
+    color: var(--orange-light);
     margin-top: 12px;
 }
 
-/* Drop-down menu*/
+/* Drop-down menu */
 #left-column select {
     width: 100%;
     padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid #444;
-    background: #1f1f1f;
-    color: #ffdd99;
+    border-radius: var(--r-lg);
+    border: 1px solid var(--border-strong);
+    background: var(--panel-light);
+    color: var(--text-accent);
     font-size: 15px;
     cursor: pointer;
-    transition: 0.25s;
+
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg fill='%23ffdd99' height='10' viewBox='0 0 24 24' width='10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
     background-size: 12px;
     padding-right: 36px;
+
+    transition: 0.25s;
 }
 
 #left-column select:hover {
-    border-color: #ffaa33;
+    border-color: var(--orange-light);
     background: #2a2a2a;
 }
 
 #left-column select:focus {
     outline: none;
-    border-color: #ffaa33;
-    box-shadow: 0 0 6px #ffaa33;
+    border-color: var(--orange-light);
+    box-shadow: 0 0 6px var(--orange-light);
 }
 
 /* ---------------------------
-   Left part: Material parameters
+   Params panel
    --------------------------- */
-
-/* Main container */
 #params-panel {
     display: flex;
     flex-direction: column;
     gap: 10px;
     margin-top: 10px;
-    padding: 12px;
-    background: #161616;
-    border: 1px solid #444;
-    border-radius: 8px;
 }
 
 /* Section */
 .param-section {
-    border: 1px solid #333;
-    border-radius: 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
     overflow: hidden;
 }
 
+/* Section header */
 .param-section-header {
     background: #2b2b2b;
-    color: #ffdd99;
+    color: var(--text-accent);
     font-size: 15px;
     font-weight: bold;
     padding: 8px 12px;
@@ -117,7 +152,7 @@ body {
 }
 
 .param-section-header:hover {
-    background: #ff7519;
+    background: var(--orange);
     color: #111;
 }
 
@@ -132,39 +167,39 @@ body {
     transform: rotate(90deg);
 }
 
-
-/* Body section */
+/* Section body */
 .param-section-body {
-    background: #1f1f1f;
+    background: var(--panel-light);
     padding: 10px;
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-/* Input Value */
-.param-label {
-    font-size: 13px;
-    color: #eee;
-}
-
-/* Input Value */
+/* Param row */
 .param-row {
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
 
+/* Label */
+.param-label {
+    font-size: 13px;
+    color: var(--text);
+}
+
+/* Value */
 .param-value {
     font-size: 12px;
-    color: #ffdd99;
+    color: var(--text-accent);
     text-align: right;
 }
 
 /* Slider */
 .param-row input[type="range"] {
     width: 100%;
-    accent-color: #ff7519;
+    accent-color: var(--orange);
     cursor: pointer;
 }
 
@@ -173,18 +208,15 @@ body {
     width: 100%;
     height: 30px;
     padding: 6px;
-    border-radius: 4px;
+    border-radius: var(--r-sm);
     border: 1px solid #0a0404;
     background: #222;
     cursor: pointer;
 }
 
-
-
 /* ---------------------------
    Center: Scene + View menu
    --------------------------- */
-/* Center colomun*/
 #central-column {
     flex: 1;
     display: flex;
@@ -192,66 +224,63 @@ body {
     overflow: hidden;
 }
 
-/* 3D Scene */
+/* Scene */
 #scene-container {
     height: 66%;
     min-height: 150px;
     background: #000;
     position: relative;
-    border-bottom: 2px solid #333;
+    border-bottom: 2px solid var(--border);
 }
 
-/* Area view helper (Top right in the scene) */
+/* View helper */
 #view-helper {
     position: absolute;
     top: 10px;
     right: 10px;
     width: 120px;
     height: 120px;
-    border-radius: 8px;
+    border-radius: var(--r-lg);
 }
 
-/* View menu */
+/* Bottom panel */
 #bottom-panel {
     height: 34%;
     min-height: 120px;
-    background: #1a1a1a;
-    color: #eee;
+    background: var(--panel);
     padding: 15px;
     overflow-y: auto;
-    border-top: 2px solid #333;
+    border-top: 2px solid var(--border);
 }
 
-/* Title bottom pannel*/
+/* Bottom title */
 #bottom-panel h3 {
-    color: #ff7519;
+    color: var(--orange);
     margin-bottom: 10px;
 }
 
-/* Label button bottom*/
+/* Bottom labels */
 #bottom-panel label {
     display: block;
     margin: 8px 0 4px 0;
     font-size: 13px;
 }
 
-/* Input & selection for the preview*/
-#bottom-panel input, #bottom-panel select {
+/* Inputs */
+#bottom-panel input,
+#bottom-panel select {
     width: 100%;
     padding: 6px;
     margin-bottom: 10px;
-    border-radius: 4px;
+    border-radius: var(--r-sm);
     border: 1px solid #0a0404;
     background: #222;
-    color: #eee;
+    color: var(--text);
 }
 
-
 /* ---------------------------
-   Center: Environment Relfection
+   Environment reflection
    --------------------------- */
-
-/* Toggle "Environment Reflection" */
 .settings-environment {
     display: flex;
     align-items: center;
@@ -261,23 +290,23 @@ body {
 .toggle-environment {
     width: 100%;
     background: #2b2b2b;
-    color: #eee;
+    color: var(--text);
     border: none;
     padding: 10px 12px;
-    border-radius: 6px;
+    border-radius: var(--r-md);
     cursor: pointer;
     font-weight: bold;
     text-align: left;
-    transition: 0.2s;
     position: relative;
+    transition: 0.2s;
 }
 
 .toggle-environment:hover {
-    background: #61afff;
+    background: var(--blue);
     color: #111;
 }
 
-/* arrow */
+/* Arrow */
 .toggle-environment:after {
     content: "▸";
     position: absolute;
@@ -296,53 +325,48 @@ body {
     margin-top: 8px;
 }
 
-
 /* ---------------------------
    Right part: Code preview
    --------------------------- */
-
-/* Left column */
 #right-column {
     width: 350px;
     min-width: 200px;
     max-width: 50%;
-    background: #1a1a1a;
-    padding: 20px;
-    overflow-y: auto;
-    border-left: 2px solid #333;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: var(--s-lg);
+    border-left: 2px solid var(--border);
+    overflow-y: auto;
 }
 
-/* Title columun*/
+/* Title */
 #right-column h2 {
-    color: #61afff;
+    color: var(--blue);
     margin-bottom: 10px;
 }
 
-/* Block for each part of code*/
+/* GLSL blocks */
 .glsl-block {
     display: flex;
     flex-direction: column;
     gap: 6px;
 }
 
-/* Line of the button */
+/* Header */
 .glsl-header {
     display: flex;
     align-items: center;
     gap: 6px;
 }
 
-/* Toggle Button */
+/* Toggle button */
 .glsl-toggle {
     flex: 1;
     background: #2b2b2b;
-    color: #eee;
+    color: var(--text);
     border: none;
     padding: 8px;
-    border-radius: 4px;
+    border-radius: var(--r-sm);
     cursor: pointer;
     font-weight: bold;
     text-align: center;
@@ -350,11 +374,11 @@ body {
 }
 
 .glsl-toggle:hover {
-    background: #ff7519;
+    background: var(--orange);
     color: #111;
 }
 
-/* GLSL Code Area */
+/* Code area */
 .glsl-code {
     width: 100%;
     background: #111;
@@ -363,38 +387,33 @@ body {
     resize: none;
     font-family: "Courier New", monospace;
     padding: 10px;
-    border-radius: 4px;
+    border-radius: var(--r-sm);
     overflow: auto;
     display: none;
     min-height: 700px;
     max-height: 80vh;
-    flex: 1;
 }
 
-/* Download Button */
+/* Download button */
 .glsl-download {
     background: #2b2b2b;
-    color: #eee;
+    color: var(--text);
     border: none;
     padding: 4px 8px;
-    border-radius: 4px;
+    border-radius: var(--r-sm);
     cursor: pointer;
     font-size: 14px;
     transition: 0.2s;
 }
 
 .glsl-download:hover {
-    background: #61afff;
+    background: var(--blue);
     color: #111;
 }
-
-
-
 
 /* ---------------------------
    Resizers
    --------------------------- */
-/* Left & Right vertical resizers */
 #resizer-left,
 #resizer-right {
     width: 6px;
@@ -406,10 +425,9 @@ body {
 
 #resizer-left:hover,
 #resizer-right:hover {
-    background: #ff7519;
+    background: var(--orange);
 }
 
-/* Horizontal resizer */
 #resizer-horizontal {
     height: 2px;
     background: #555;
@@ -419,5 +437,5 @@ body {
 }
 
 #resizer-horizontal:hover {
-    background: #61afff;
+    background: var(--blue);
 }
