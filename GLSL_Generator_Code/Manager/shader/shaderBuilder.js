@@ -19,7 +19,7 @@ const graphs = {
     // synthetic
     "synthetic_rubber": () => import ("./graphs/synthetic/rubber.js"),
     
-    //Pattern
+    // patterns
     "pattern_noisePattern": () => import("./graphs/pattern/noisePattern.js"),
     "pattern_voronoiPattern": () => import("./graphs/pattern/voronoiPattern.js"),
     "pattern_wavePattern": () => import("./graphs/pattern/wavePattern.js"),
@@ -34,17 +34,19 @@ export async function createShader(graph_name, mesh, camera, light) {
         return;
     }
     try {
+        // import graph & parameters
         const module = await importedGraph();
         const graphBlocks = module.getGraph();
-        const params = module.getParams ? module.getParams() : {};  // ← récupère les params
+        const params = module.getParams ? module.getParams() : {};
 
         const shaderGraph = new ShaderGraph(graphBlocks, "finalColor");
         const material = shaderGraph.createMaterial(camera, light);
         if (mesh) mesh.material = material;
 
-        window.__currentShaderGraph = shaderGraph;  // ← expose pour les updates live
+        // Store the instance to allow access elsewhere without passing it as a parameter.
+        window.__currentShaderGraph = shaderGraph;
 
-        return { material, params };  // ← retourne les deux
+        return { material, params };
     } catch(err) {
         console.error("Error loading graph:", graph_name, err);
     }

@@ -18,17 +18,17 @@ export function requestEnvUpdate() { updateEnv = true; }
 export function initScene(container) {
     containerRef = container;
 
-    // scene
+    // Scene
     scene = new THREE.Scene();
     scene.background = new THREE.Color("#d0f3f4");
 
-    // light
+    // Light
     ambientLight = new THREE.AmbientLight(0xaaaaaa, 1);
     updateAmbient =false;
     scene.add(ambientLight);
 
     updateEnv = false;
-    // camera + control
+    // Camera + control
     camera = new THREE.PerspectiveCamera(
         75, // field of view
         container.clientWidth / container.clientHeight, // ratio
@@ -37,12 +37,12 @@ export function initScene(container) {
     );
     camera.position.set(3, 3, 3);
 
-    // renderer
+    // Renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
 
-    // controls camera + helper
+    // Controls camera + helper
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
@@ -52,13 +52,13 @@ export function initScene(container) {
 
     createMesh("cube");
 
-    // resize
+    // Resize
     const ro = new ResizeObserver(() => {
         resizeRequested = true;
     });
     ro.observe(containerRef);
 
-    // update
+    // Update
     animate();
 }
 
@@ -72,18 +72,18 @@ function animate() {
         resizeRequested = false;
     }
 
-    // camera
+    // Camera
     if (mesh && mesh.material && mesh.material.uniforms) {
         mesh.material.uniforms.uCameraPos.value.copy(camera.position);
     }
 
-    // ambient
+    // Ambient
     if (updateAmbient && mesh && mesh.material && mesh.material.uniforms) {
         mesh.material.uniforms.uAmbientColor.value.copy(ambientLight.color);
         updateAmbient = false;
     }
 
-    // environment
+    // Environment
     if (updateEnv && mesh && mesh.material && mesh.material.uniforms) {
         const { envLight, envFill, envGround } = getEnvColors();
         mesh.material.uniforms.uEnvLight.value.copy(envLight);
@@ -92,7 +92,7 @@ function animate() {
         updateEnv = false;
     }
 
-    // helper
+    // Helper
     if (helperRenderer && viewHelper && helperCamera) renderViewHelper();
     renderer.render(scene, camera);
 }
@@ -112,8 +112,6 @@ function updateRendererSize() {
 /* ----------------------
     Apply shader + Model
    ---------------------- */
-
-
 export function createShaderFromGraph() {
     return createShader(currentGraphName, mesh, camera, ambientLight);
 }
@@ -139,8 +137,8 @@ export function createMesh(type = "cube") {
         case "cylinder": geometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 32); break;
         default:
             geometry = new THREE.BoxGeometry(1, 1, 1, 2, 2, 2);
-            geometry = geometry.toNonIndexed();       // sépare les vertices
-            geometry.computeVertexNormals();           // recalcule les normales smooth
+            geometry = geometry.toNonIndexed();       // separate the vertices
+            geometry.computeVertexNormals();           // compute the normals
             break;
     }
 
@@ -181,7 +179,7 @@ export function loadModel(url) {
 
             scene.add(currentModel);
 
-            // position
+            // position & scale
             switch (modelName) {
                 case "teapot":
                     currentModel.position.set(0, -0.5, 0);

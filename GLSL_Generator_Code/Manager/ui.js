@@ -1,84 +1,168 @@
 import { scene, createMesh, loadModel, currentModel, ambientLight, requestAmbientUpdate, requestEnvUpdate, createShaderFromGraph } from "./scene.js";
 import * as THREE from "three";
-import { getVertexShader, getFragmentShader, vertexShader } from "./shader/shaderGraph.js";
+import { getVertexShader, getFragmentShader } from "./shader/shaderGraph.js";
 
 export let currentGraphName = "metal_bronze";
 
 let glslBlocks;
-/* ----------------------
-    Init
-   ---------------------- */
+let dom = {};
+
+
+/* =====================================================
+   INIT UI
+===================================================== */
 export async function initUI() {
-    // Get view menu
-    glslBlocks = document.querySelectorAll(".glsl-block");
-    const bgInput = document.getElementById("bg-color");
-    bgInput.value = "#" + scene.background.getHexString();
-    const modelSelect = document.getElementById("model-select");
-    const ambientInput = document.getElementById("ambient-color");
+    //Store references to HTML elements in memory
+    cacheDOM();
+    initUtilityControls();
 
-    // Background
-    bgInput.addEventListener("input", () => {
-        scene.background = new THREE.Color(bgInput.value);
-    });
+    // Scene UI
+    initBackground();
+    initLightControls();
+    initEnvironmentControls();
 
-    // Shader & Model
+    // Material + shader graph system
+    initMaterialSystem();
+    initModelControls();
+
+    // GLSL preview UI
+    initGLSLUI();
+
+    // Initialize shader graph once at startup
     await initShader();
+    updateGLSLPreview();
+}
 
-    modelSelect.addEventListener("change", () => {
-        const value = modelSelect.value;
 
-        if (["cube", "sphere", "torus", "cylinder"].includes(value)) {
-            createMesh(value);
-        } else {
-            loadModel(`/Models/${value}.glb`);
-        }
+/* =====================================================
+   DOM CACHE
+===================================================== */
+function cacheDOM() {
+    // material selection
+    dom.categorySelect = document.getElementById("material-category");
+    dom.subSelect = document.getElementById("material-subcategory");
 
-        updateGLSLPreview();
+    // scene settings
+    dom.bgInput = document.getElementById("bg-color");
+    dom.modelSelect = document.getElementById("model-select");
+    dom.ambientInput = document.getElementById("ambient-color");
+
+    // code
+    glslBlocks = document.querySelectorAll(".glsl-block");
+}
+
+
+/* =====================================================
+   BACKGROUND
+===================================================== */
+function initBackground() {
+    // Initialize input with current scene background
+    dom.bgInput.value = "#" + scene.background.getHexString();
+
+    dom.bgInput.addEventListener("input", () => {
+        scene.background = new THREE.Color(dom.bgInput.value);
+    });
+}
+
+
+/* =====================================================
+   MATERIAL / SHADER SYSTEM
+===================================================== */
+function initMaterialSystem() {
+    // Initialisation
+    updateSubcategoryOptions(dom.categorySelect.value);
+    updateMaterialType();
+
+    // When the category changes → recalculation
+    dom.categorySelect.addEventListener("change", () => {
+        updateSubcategoryOptions(dom.categorySelect.value);
+        updateMaterialType();
     });
 
-    
-    // Ambient
-    ambientInput.addEventListener("input", () => {
-        ambientLight.color.set(ambientInput.value);
-        requestAmbientUpdate();
-        updateGLSLPreview();
+    // When the subcategory changes → recalculation
+    dom.subSelect.addEventListener("change", updateMaterialType);
+}
+
+
+/* =====================================================
+   MODEL HANDLING
+===================================================== */
+function initModelControls() {
+    dom.modelSelect.addEventListener("change", () => {
+        handleModelChange(dom.modelSelect.value);
+        updateGLSLPreview(); // ensures that the material is applied correctly
     });
+}
 
-    // Environment
-    const envLight  = document.getElementById("env-light");
-    const envFill   = document.getElementById("env-fill");
-    const envGround = document.getElementById("env-ground");
+// Switch between meshes from THREE and external GLB models
+function handleModelChange(value) {
+    if (["cube", "sphere", "torus", "cylinder"].includes(value)) {
+        createMesh(value);
+    } else {
+        loadModel(`/Models/${value}.glb`);
+    }
+}
 
-    [envLight, envFill, envGround].forEach(input => {
-        input.addEventListener("input", () => requestEnvUpdate());
-    });
+// Apply default model depending on selected material
+function applyDefaultModel(categorySelect, subSelect, defaultModelByMaterial) {
+    const modelSelect = document.getElementById("model-select");
 
-    // toogle
-    document.querySelectorAll(".toggle-environment").forEach(toggle => {
-        const content = toggle.closest(".settings-block").querySelector(".environment-content");
-        content.style.display = "none";
+    // get the model
+    if (!categorySelect || !subSelect) return;
 
-        toggle.addEventListener("click", () => {
-            const visible = content.style.display !== "none";
-            content.style.display = visible ? "none" : "block";
-            toggle.classList.toggle("active", !visible);
-        });
-    });
+    const key = `${categorySelect.value}_${subSelect.value}`;
+    const defaultModel = defaultModelByMaterial[key];
 
-    // Code preview
+    if (!defaultModel) return;
+
+    // update the UI and the model
+    modelSelect.value = defaultModel;
+    handleModelChange(defaultModel);
+}
+
+
+/* =====================================================
+   GLSL PREVIEW
+===================================================== */
+function initGLSLUI() {
+    initGLSLToggles();
+    initDownloadButtons();
+}
+
+// Toogle to show or hide the code
+function initGLSLToggles() {
     glslBlocks.forEach(block => {
-
         const toggle = block.querySelector(".glsl-toggle");
         const code = block.querySelector(".glsl-code");
-        // visibility management
+
         toggle.addEventListener("click", () => {
             const visible = window.getComputedStyle(code).display !== "none";
             code.style.display = visible ? "none" : "block";
-
         });
     });
+}
 
-    // Downloads
+// Update the code preview with the current shader
+export function updateGLSLPreview() {
+    if (!currentModel || !glslBlocks) return;
+
+    // get the shader
+    const vertexShader = getVertexShader();
+    const fragmentShader = getFragmentShader();
+
+    // Update preview textareas
+    glslBlocks[0].querySelector(".glsl-code").value = vertexShader;
+    glslBlocks[1].querySelector(".glsl-code").value = fragmentShader;
+    glslBlocks[2].querySelector(".glsl-code").value = vertexShader + "\n\n" + fragmentShader;
+}
+
+
+/* =====================================================
+   DOWNLOAD THE CODE
+===================================================== */
+
+// Add listener
+function initDownloadButtons() {
     glslBlocks[0].querySelector(".glsl-download").addEventListener("click", () =>
         download("vertex_shader.glsl", glslBlocks[0].querySelector(".glsl-code").value)
     );
@@ -92,40 +176,14 @@ export async function initUI() {
     );
 
     document.getElementById("download-all")?.addEventListener("click", () => {
-
         download("vertex_shader.glsl", glslBlocks[0].querySelector(".glsl-code").value);
         download("fragment_shader.glsl", glslBlocks[1].querySelector(".glsl-code").value);
-
     });
-
-    updateGLSLPreview();
 }
 
-/* ----------------------
-    GLSL code preview
-   ---------------------- */
-
-// preview GLSL shaders in the interface
-export function updateGLSLPreview() {
-
-    if (!currentModel || !glslBlocks) return;
-
-    const vertexShader = getVertexShader();
-    const fragmentShader = getFragmentShader();
-    console.log("update glsl preview");
-    glslBlocks[0].querySelector(".glsl-code").value = vertexShader;
-    glslBlocks[1].querySelector(".glsl-code").value = fragmentShader;
-    glslBlocks[2].querySelector(".glsl-code").value = vertexShader + "\n\n" + fragmentShader;
-}
-
-/* ----------------------
-    Download
-   ---------------------- */
-
+// Download the file
 function download(filename, content) {
-
     const blob = new Blob([content], { type: "text/plain" });
-
     const link = document.createElement("a");
 
     link.href = URL.createObjectURL(blob);
@@ -133,220 +191,198 @@ function download(filename, content) {
     link.click();
 
     URL.revokeObjectURL(link.href);
-
 }
 
 
-/* ----------------------
-    Resize
-   ---------------------- */
+/* =====================================================
+   RESIZE HANDLING
+===================================================== */
+function initUtilityControls() {
+    initResizeHandlers();
+}
 
-// get resizer
-const resizerLeft = document.getElementById("resizer-left");
-const resizerRight = document.getElementById("resizer-right");
-const resizerHorizontal = document.getElementById("resizer-horizontal");
+// Allows to resize the interface panels
+function initResizeHandlers() {
+    const resizerLeft = document.getElementById("resizer-left");
+    const resizerRight = document.getElementById("resizer-right");
+    const resizerHorizontal = document.getElementById("resizer-horizontal");
 
-// get full colunm
-const leftPanel = document.getElementById("left-column");
-const rightPanel = document.getElementById("right-column");
-const center = document.getElementById("central-column");
+    const leftPanel = document.getElementById("left-column");
+    const rightPanel = document.getElementById("right-column");
+    const center = document.getElementById("central-column");
 
-// state for drag
-let isResizingLeft = false;
-let isResizingRight = false;
-let isResizingHorizontal = false;
+    let isResizingLeft = false;
+    let isResizingRight = false;
+    let isResizingHorizontal = false;
 
-// listener for drag
-resizerLeft.addEventListener("mousedown", () => isResizingLeft = true);
-resizerRight.addEventListener("mousedown", () => isResizingRight = true);
-resizerHorizontal.addEventListener("mousedown", () => isResizingHorizontal = true);
+    resizerLeft.addEventListener("mousedown", () => isResizingLeft = true);
+    resizerRight.addEventListener("mousedown", () => isResizingRight = true);
+    resizerHorizontal.addEventListener("mousedown", () => isResizingHorizontal = true);
 
-// Resizing on mouse click & move
-document.addEventListener("mousemove", e => {
-    if (isResizingLeft) {
-        const newWidth = e.clientX;
-        leftPanel.style.width = newWidth + "px";
-    }
+    document.addEventListener("mousemove", e => {
+        if (isResizingLeft) {
+            leftPanel.style.width = e.clientX + "px";
+        }
+        else if (isResizingRight) {
+            rightPanel.style.width = (window.innerWidth - e.clientX) + "px";
+        }
+        else if (isResizingHorizontal) {
+            const y = e.clientY;
+            const containerHeight = window.innerHeight;
 
-    else if (isResizingRight) {
-        const newWidth = window.innerWidth - e.clientX;
-        rightPanel.style.width = newWidth + "px";
-    }
+            // Adjust heights of top/bottom central panels
+            center.children[0].style.height = y + "px";
+            center.children[2].style.height = (containerHeight - y) + "px";
+        }
+    });
 
-    else if (isResizingHorizontal) {
-        const containerHeight = window.innerHeight;
-        const y = e.clientY;
-
-        const topHeight = y;
-        const bottomHeight = containerHeight - y;
-
-        center.style.flexDirection = "-column";
-
-        center.children[0].style.height = topHeight + "px";
-        center.children[2].style.height = bottomHeight + "px";
-    }
-});
-
-// Stop resizing on mouseup
-document.addEventListener("mouseup", () => {
-    isResizingLeft = false;
-    isResizingRight = false;
-    isResizingHorizontal = false;
-});
+    document.addEventListener("mouseup", () => {
+        isResizingLeft = false;
+        isResizingRight = false;
+        isResizingHorizontal = false;
+    });
+}
 
 
-/* ----------------------
-    Initialisation
-   ---------------------- */
-const categories = {
-    metal: ["bronze", "steel"],
-    wood: ["woodPlank"],
-    cloth: ["wovenFabric", "militaryFabric"],
-    mineral: ["marble", "granite", "polishedStone"],
-    synthetic: ["rubber"],
+/* =====================================================
+   LIGHT
+===================================================== */
+function initLightControls() {
+    dom.ambientInput.addEventListener("input", () => {
+        ambientLight.color.set(dom.ambientInput.value);
+        requestAmbientUpdate();
+    });
+}
 
-    pattern: ["noisePattern", "voronoiPattern", "wavePattern", "magicPattern", "woodGrainPattern"],
-};
+export function getAmbientInputColor() {
+    const ambientInput = document.getElementById("ambient-color");
+    if (!ambientInput) return new THREE.Color(0.3, 0.3, 0.3);
+    return new THREE.Color(ambientInput.value);
+}
 
+export function getEnvColors() {
+    // Convert hexadecimal to RGB
+    const toVec3 = (id, fallback) => {
+        const el = document.getElementById(id);
+        if (!el) return fallback;
+        return new THREE.Color(el.value);
+    };
+
+    return {
+        envLight:  toVec3("env-light",  new THREE.Color(1, 1, 1)), // default value
+        envFill:   toVec3("env-fill",   new THREE.Color(0.6, 0.6, 0.65)),
+        envGround: toVec3("env-ground", new THREE.Color(0.1, 0.1, 0.1)),
+    };
+}
+
+
+/* =====================================================
+   ENVIRONMENT CONTROLS
+===================================================== */
+function initEnvironmentControls() {
+    const envLight = document.getElementById("env-light");
+    const envFill = document.getElementById("env-fill");
+    const envGround = document.getElementById("env-ground");
+
+    // add listener
+    [envLight, envFill, envGround].forEach(input => {
+        input.addEventListener("input", () => requestEnvUpdate());
+    });
+
+    // hide toggle-environment
+    document.querySelectorAll(".toggle-environment").forEach(toggle => {
+        const content = toggle.closest(".settings-block").querySelector(".environment-content");
+        content.style.display = "none";
+
+        toggle.addEventListener("click", () => {
+            const visible = content.style.display !== "none";
+            content.style.display = visible ? "none" : "block";
+            toggle.classList.toggle("active", !visible);
+        });
+    });
+}
+
+
+/* =====================================================
+   SHADER INIT
+===================================================== */
 const defaultModelByMaterial = {
-    // metal
     "metal_bronze": "Gear",
     "metal_steel":  "Gear",
-    
-    // wood
     "wood_woodPlank": "cube",
-    
-    // cloth
     "cloth_wovenFabric":   "Cloth",
     "cloth_militaryFabric": "Cloth",
-
-    // mineral
     "mineral_marble":   "Teapot",
     "mineral_granite":  "Suzanne",
     "mineral_polishedStone":  "Suzanne",
-
-    // synthetic
     "synthetic_rubber": "torus",
-
-    // pattern
     "pattern_noisePattern":   "cube",
     "pattern_voronoiPattern": "cube",
     "pattern_wavePattern":    "cube",
     "pattern_magicPattern":   "cube",
     "pattern_woodGrainPattern":   "cube",
 };
-// Add Listener for dynamic selection
-const categorySelect = document.getElementById("material-category");
-const subSelect = document.getElementById("material-subcategory");
 
-categorySelect.addEventListener("change", () => {
-    updateSubcategoryOptions(categorySelect.value);
-    updateMaterialType();
-});
+export async function initShader() {
+    try {
+        const result = await createShaderFromGraph();
+        if (result?.params) renderParamsPanel(result.params);
+        console.log("Shader initialization successful");
+    } catch (err) {
+        console.error("Shader initialization error:", err);
+    }
+}
 
-subSelect.addEventListener("change", () => {
-    updateMaterialType();
-});
+async function updateMaterialType() {
+    currentGraphName = `${document.getElementById("material-category").value}_${document.getElementById("material-subcategory").value}`;
 
-// Fill subcategory options
+    const result = await createShaderFromGraph();
+
+    if (result?.params) {
+        renderParamsPanel(result.params);
+    }
+
+    applyDefaultModel(
+        document.getElementById("material-category"),
+        document.getElementById("material-subcategory"),
+        defaultModelByMaterial
+    );
+
+    updateGLSLPreview();
+}
+
 function updateSubcategoryOptions(category) {
+    const subSelect = document.getElementById("material-subcategory");
+
+    const categories = {
+        metal: ["bronze", "steel"],
+        wood: ["woodPlank"],
+        cloth: ["wovenFabric", "militaryFabric"],
+        mineral: ["marble", "granite", "polishedStone"],
+        synthetic: ["rubber"],
+        pattern: ["noisePattern", "voronoiPattern", "wavePattern", "magicPattern", "woodGrainPattern"],
+    };
+
     subSelect.innerHTML = "";
+
+    // fill the subcategoryOptions
     categories[category].forEach(sub => {
         const option = document.createElement("option");
         option.value = sub;
-        option.textContent = sub.charAt(0).toUpperCase() + sub.slice(1);
+        option.textContent = sub;
         subSelect.appendChild(option);
     });
 
-    // select first option
-    if (subSelect.options.length > 0) subSelect.value = subSelect.options[0].value;
+    // select the first
+    subSelect.value = subSelect.options[0].value;
 }
 
-function applyDefaultModel() {
-    const modelSelect = document.getElementById("model-select");
-    const key = `${categorySelect.value}_${subSelect.value}`;
-    const defaultModel = defaultModelByMaterial[key];
 
-    if (!defaultModel) return;
+/* =====================================================
+   PARAMS PANEL
+===================================================== */
 
-    modelSelect.value = defaultModel;
-
-    if (["cube", "sphere", "torus", "cylinder"].includes(defaultModel)) {
-        createMesh(defaultModel);
-    } else {
-        loadModel(`/Models/${defaultModel}.glb`);
-    }
-
-    updateGLSLPreview();
-}
-
-export async function initShader() {
-    updateSubcategoryOptions(categorySelect.value);
-
-    const mainCategory = categorySelect.value;
-    const subCategory = subSelect.value;
-
-    currentGraphName = `${mainCategory}_${subCategory}`;
-    console.log("Initial graph:", currentGraphName);
-
-    try {
-        const result = await createShaderFromGraph();          // ← récupère le résultat
-        if (result?.params) renderParamsPanel(result.params);  // ← construit le panel
-        console.log("Shader initialization successful!");
-        applyDefaultModel();
-    } catch (err) {
-        console.error("Error shader intialization :", err);
-    }
-}
-
-/* ----------------------
-    Dynamic slection
-   ---------------------- */
-
-// Adapt the model with the category
-categorySelect.addEventListener("change", async () => {
-    updateSubcategoryOptions(categorySelect.value);
-    updateMaterialType();
-});
-
-
-async function updateMaterialType() {
-    currentGraphName = `${categorySelect.value}_${subSelect.value}`;
-    console.log("Selected sub:", subSelect.value, "-> Graph:", currentGraphName);
-    const result = await createShaderFromGraph();              // ← récupère le résultat
-    if (result?.params) renderParamsPanel(result.params);      // ← construit le panel
-    applyDefaultModel();
-    updateGLSLPreview();
-}
-
-/* ----------------------
-    Light
-   ---------------------- */
-
-export function getAmbientInputColor() {
-    const ambientInput = document.getElementById("ambient-color");
-    if (!ambientInput) return new THREE.Color(0.3, 0.3, 0.3);
-    return new THREE.Color(ambientInput.value);
-
-}
-
-export function getEnvColors() {
-    const toVec3 = (id, fallback) => {
-        const el = document.getElementById(id);
-        if (!el) return fallback;
-        return new THREE.Color(el.value);
-    };
-    return {
-        envLight:  toVec3("env-light",  new THREE.Color(1, 1, 1)),
-        envFill:   toVec3("env-fill",   new THREE.Color(0.6, 0.6, 0.65)),
-        envGround: toVec3("env-ground", new THREE.Color(0.1, 0.1, 0.1)),
-    };
-}
-
-/* ----------------------
-    Params panel
-   ---------------------- */
-
+// Convert RGB array to hex color string
 function rgbToHex([r, g, b]) {
     return "#" + [r, g, b].map(v => v.toString(16).padStart(2, "0")).join("");
 }
@@ -354,30 +390,34 @@ function rgbToHex([r, g, b]) {
 function renderParamsPanel(params) {
     const panel = document.getElementById("params-panel");
     if (!panel) return;
+
+    // Clear existing UI before re-rendering
     panel.innerHTML = "";
 
+    // Loop through each parameter section
     for (const [sectionName, fields] of Object.entries(params)) {
-
-        // Section header (cliquable pour replier)
         const section = document.createElement("div");
         section.className = "param-section";
 
         const header = document.createElement("div");
         header.className = "param-section-header";
         header.textContent = sectionName;
+
+        const body = document.createElement("div");
+        body.className = "param-section-body";
+        body.style.display = "none";
+
+        // Toggle section visibility
         header.addEventListener("click", () => {
             const isOpen = body.style.display !== "none";
             body.style.display = isOpen ? "none" : "block";
             header.classList.toggle("open", !isOpen);
         });
 
-        const body = document.createElement("div");
-        body.className = "param-section-body";
-        body.style.display = "none";
-
         section.appendChild(header);
         section.appendChild(body);
 
+        // Create UI controls for each field in the section
         for (const field of fields) {
             const row = document.createElement("div");
             row.className = "param-row";
@@ -385,9 +425,11 @@ function renderParamsPanel(params) {
             const label = document.createElement("span");
             label.className = "param-label";
             label.textContent = field.label;
+
             row.appendChild(label);
 
-            if (field.type === "range" || field.type === "float" || field.type === "int") {
+            // Numeric parameters (slider inputs)
+            if (["range", "float", "int"].includes(field.type)) {
                 const slider = document.createElement("input");
                 slider.type = "range";
                 slider.min = field.min;
@@ -399,21 +441,31 @@ function renderParamsPanel(params) {
                 valueDisplay.className = "param-value";
                 valueDisplay.textContent = field.default;
 
+                // Update shader parameter and UI when slider moves
                 slider.addEventListener("input", () => {
                     const v = parseFloat(slider.value);
+
+                    // Display formatted value depending on type
                     valueDisplay.textContent = field.type === "int" ? Math.round(v) : v.toFixed(2);
+
+                    // Update shader graph parameter
                     window.__currentShaderGraph?.updateParam(field.targets, v);
+
+                    // Refresh GLSL preview to reflect changes
                     updateGLSLPreview();
                 });
 
                 row.appendChild(slider);
                 row.appendChild(valueDisplay);
 
-            } else if (field.type === "color") {
+            } 
+            // Color parameters (color picker input)
+            else if (field.type === "color") {
                 const picker = document.createElement("input");
                 picker.type = "color";
                 picker.value = rgbToHex(field.default);
 
+                // Convert hex color to RGB array and update shader
                 picker.addEventListener("input", () => {
                     const hex = picker.value;
                     const rgb = [
@@ -421,6 +473,7 @@ function renderParamsPanel(params) {
                         parseInt(hex.slice(3, 5), 16),
                         parseInt(hex.slice(5, 7), 16)
                     ];
+
                     window.__currentShaderGraph?.updateParam(field.targets, rgb);
                     updateGLSLPreview();
                 });
