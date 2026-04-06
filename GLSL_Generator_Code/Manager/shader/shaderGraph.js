@@ -3,9 +3,9 @@ import { getAmbientInputColor, getEnvColors } from "../ui";
 import { NoiseBlock } from "./blocks/patterns/noise";
 import { colorRampGlobalCode } from "./blocks/operators/colorRampGlobal";
 
-// Ajoute cette fonction helper en haut de ShaderGraph.js
+
+// Convert hex color (#RGB / #RRGGBB / #RRGGBBAA) to GLSL vec3 string
 function hexToVec3(hex) {
-    // Accepte #RGB, #RRGGBB, #RRGGBBAA
     hex = hex.replace("#", "");
     if (hex.length === 3) hex = hex.split("").map(c => c+c).join("");
     if (hex.length === 8) hex = hex.slice(0, 6); // ignore alpha
@@ -15,34 +15,45 @@ function hexToVec3(hex) {
     return `vec3(${r}, ${g}, ${b})`;
 }
 
+// Resolve a connection value into valid GLSL
 function resolveConnection(value) {
-    if (typeof value === "number") return value.toFixed(3);
-    if (typeof value === "string" && value.startsWith("#")) return hexToVec3(value);
+    if (typeof value === "number") return value.toFixed(3); // number → float
+    if (typeof value === "string" && value.startsWith("#")) return hexToVec3(value); // string hex → convert to GLSL vec3
     return value;
 }
 
+// Shared shader strings (used for preview/export)
 export let vertexShader="";
 export let fragmentShader="";
+
 let fragmentMain ="";
-let fragmentGlobal
+let fragmentGlobal;
+
+
+// ShaderGraph builds a full GLSL shader from modular blocks.
+// It separates global code (functions) and main logic,
+// and supports live updates from UI parameters.
 export class ShaderGraph {
     constructor(blocks = [], outputVar = "finalColor") {
         this.blocks = blocks;
         this.outputVar = outputVar;
+
+        // Vertex shader is static → generated once
         this.generateVertex();
     }
 
+    // FullUpdate = false → skip fragment global recomputation
     generateShaderStrings(fullUptate = true) {
         if (fullUptate)
         {
             this.generateFragmentGlobal();
-
         }
         this.generateFragmentMain();
         this.generateFullFragment();
         return { vertexShader, fragmentShader };
     }
 
+    // Assemble the fragment shader
     generateFullFragment() {
         fragmentShader = `
 // ==================
@@ -50,38 +61,37 @@ export class ShaderGraph {
 // ==================
 
 precision highp float;
+
 varying vec3 vNormal;
 varying vec3 vPosition;
 varying vec2 vUv;
 varying vec3 vWorldPosition;
 varying vec3 vViewPosition;
 
+// Lighting uniforms
 uniform vec3 uLightColor;
 uniform vec3 uLightPos;
 uniform vec3 uCameraPos;
 uniform vec3 uAmbientColor;
 
-
+// Fake environment lighting
 uniform vec3 uEnvLight;
 uniform vec3 uEnvFill;
 uniform vec3 uEnvGround;
 
+// Global functions (noise, ramps, etc.)
 ${fragmentGlobal}
 
 void main() {
 
 ${fragmentMain}
 
-    vec3 N;
-    #ifdef USE_UV_MAPPING
-        N = normalize(vNormal + finalBump * 0.15);
-    #else
-        N = normalize(vNormal + finalBump * 0.15);
-    #endif
+    // Final normal (with optional bump)
+    vec3 N = normalize(vNormal + finalBump * 0.15);
 
-    vec3 V = normalize(-vViewPosition); // direction vers la caméra
+    vec3 V = normalize(-vViewPosition);
     vec3 lightPosView = (viewMatrix * vec4(uLightPos, 1.0)).xyz;
-    vec3 L = normalize(lightPosView - vViewPosition); // direction towards the light
+    vec3 L = normalize(lightPosView - vViewPosition);
     vec3 H = normalize(L + V); 
     vec3 R = reflect(-V, N);
 
@@ -89,26 +99,19 @@ ${fragmentMain}
     float NdotH = max(dot(N, H), 0.0);
     float NdotV = max(dot(N, V), 0.0);
 
-    // Fresnel Schlick
+    // Fresnel (Schlick approximation)
     float fresnel = 0.5 + 0.5 * pow(1.0 - NdotV, 3.0);
 
-    // Fake environment map — simule un studio 3 points
-    
-    vec3 envLight  = uEnvLight;
-    vec3 envFill   = uEnvFill;
-    vec3 envGround = uEnvGround;
+    // Fake environment lighting (3-point studio)
+    float upness    = R.y * 0.5 + 0.5;
+    float sideness  = abs(R.x) * 0.5 + 0.5;
 
-    // Mix with reflection
-    float upness    = R.y * 0.5 + 0.5;          // 0 = down, 1 = up
-    float sideness  = abs(R.x) * 0.5 + 0.5;    // side
+    vec3 envColor = mix(uEnvGround, uEnvLight, upness);
+    envColor      = mix(envColor,  uEnvFill,  sideness * (1.0 - upness));
 
-    vec3 envColor = mix(envGround, envLight, upness);
-    envColor      = mix(envColor,  envFill,  sideness * (1.0 - upness));
-
-    // Fake environment
     vec3 envReflect = envColor * finalColor * fresnel * finalMetallic * 2.0;  
 
-    // Specular
+    // Specular (Blinn-Phong style)
     float shininess = mix(32.0, 512.0, 1.0 - finalRoughness);
     float spec = pow(NdotH, shininess);
     vec3 specular = finalColor * spec * 1.5;
@@ -116,7 +119,7 @@ ${fragmentMain}
     // Diffuse
     vec3 diffuse = finalColor * NdotL * (1.0 - finalMetallic * 0.9);
 
-    // Ambient minimal
+    // Ambient
     vec3 ambient = uAmbientColor * finalColor * 0.15;
 
     gl_FragColor = vec4(ambient + diffuse + specular + envReflect, 1.0);
@@ -124,13 +127,9 @@ ${fragmentMain}
 `;
     }
 
+    // Static vertex shader
     generateVertex() {
-
         vertexShader = `
-// ==================
-// Vertex Shader
-// ==================
-
 varying vec3 vNormal;
 varying vec3 vPosition;
 varying vec2 vUv;
@@ -150,16 +149,16 @@ void main() {
 
     gl_Position = projectionMatrix * mvPosition;
 }
-
         `;
         return vertexShader;
     }
 
+    // Generate shared GLSL functions (once per shader) & Avoid duplications
     generateFragmentGlobal() {
         fragmentGlobal = "";
         const globalsSet = new Set();
 
-        // ── Snoise si nécessaire ──────────────────────────────
+        // Inject noise only if required
         const needsSnoiseBlocks = ["WaveBlock", "WoodGrainBlock"];
         const hasBlockNeedingSnoise = this.blocks.some(b => needsSnoiseBlocks.includes(b.constructor.name));
         const hasNoiseBlock = this.blocks.some(b => b.constructor.name === "NoiseBlock");
@@ -178,17 +177,17 @@ void main() {
             }
         }
 
-        // ── ColorRampBlock : assigne les instanceId + émet le global partagé ────
+        // Shared ColorRamp system (batched uniforms)
         const colorRamps = this.blocks.filter(b => b.constructor.name === "ColorRampBlock");
         if (colorRamps.length > 0) {
             const maxStops = Math.max(...colorRamps.map(b => b.positions.length));
             if (maxStops > 0) {
-                colorRamps.forEach((b, i) => b.instanceId = i); // assignation ici
+                colorRamps.forEach((b, i) => b.instanceId = i);
                 fragmentGlobal += colorRampGlobalCode(colorRamps.length, maxStops);
             }
         }
 
-        // ── Tous les autres blocks ────────────────────────────
+        // Other blocks
         for (const block of this.blocks) {
             if (block.constructor.name === "ColorRampBlock") continue;
 
@@ -200,6 +199,8 @@ void main() {
         }
     }
 
+
+    // Generate fragment main -> call the functions
     generateFragmentMain() {
         fragmentMain = "";
         let connectionBlock = null;
@@ -209,6 +210,7 @@ void main() {
             if (block.constructor.name === "ConnectionBlock") connectionBlock = block;
         }
 
+        // Resolve final outputs
         if (connectionBlock) {
             const connections = connectionBlock.connections || {};
             const colorVar     = resolveConnection(connections.color     || "vec3(1.0)");
@@ -221,7 +223,7 @@ void main() {
             const metallicVar  = isNumber(metallicRaw)  ? metallicRaw  : metallicRaw  + ".r";
 
             fragmentMain +=
-`    // Define final outputs with connection
+`    // Final material outputs
     vec3 finalColor = ${colorVar};
     vec3 finalBump = ${bumpVar};
     float finalRoughness = ${roughnessVar};
@@ -229,9 +231,9 @@ void main() {
     `;
         }
         else {
+            // Fallback: last block output
             fragmentMain +=
-`    // Define final outputs
-    vec3 finalColor = ${this.blocks[this.blocks.length - 1].name};
+`    vec3 finalColor = ${this.blocks[this.blocks.length - 1].name};
     vec3 finalBump = vec3(0.0);
     float finalRoughness = 0.5;
     float finalMetallic = 0.0;
@@ -239,16 +241,17 @@ void main() {
         }
     }
     
+    // Create Three.js ShaderMaterial from graph
     createMaterial(camera, light) {
         const { vertexShader, fragmentShader } = this.generateShaderStrings();
         const { envLight, envFill, envGround } = getEnvColors();
 
+        // Pack all color ramps into flat arrays
         const colorRamps = this.blocks.filter(b => b.constructor.name === "ColorRampBlock");
         const maxStops   = colorRamps.length > 0 ? Math.max(...colorRamps.map(b => b.positions.length)) : 1;
         const total      = colorRamps.length * maxStops;
         const modeMap    = { linear: 0, smooth: 1, constant: 2 };
 
-        // Remplir les flat arrays
         const posArr    = new Float32Array(total);
         const colorArr  = new Float32Array(total * 3);
         const countArr  = new Int32Array(colorRamps.length);
@@ -258,6 +261,7 @@ void main() {
             const offset = i * maxStops;
             countArr[i]  = ramp.positions.length;
             modeArr[i]   = modeMap[ramp.mode] ?? 0;
+
             ramp.positions.forEach((p, j) => posArr[offset + j] = p);
             ramp.colors.forEach((c, j) => {
                 colorArr[(offset + j) * 3 + 0] = c[0] / 255;
@@ -277,7 +281,8 @@ void main() {
                 uEnvLight:      { value: envLight.clone() },
                 uEnvFill:       { value: envFill.clone() },
                 uEnvGround:     { value: envGround.clone() },
-                // Color ramp uniforms
+
+                // Color ramp packed uniforms
                 ramp_count:     { value: countArr },
                 ramp_mode:      { value: modeArr },
                 ramp_positions: { value: posArr },
@@ -285,10 +290,12 @@ void main() {
             },
             extensions: { derivatives: true }
         });
+
         this._material = material;
         return material;
     }
 
+    // Update parameters from UI: modifies block values, regenerates main fragment shader & recompilation
     updateParam(targets, value) {
         for (const { block: blockName, prop, transform, index } of targets) {
             const block = this.blocks.find(b => b.name === blockName);
@@ -303,16 +310,19 @@ void main() {
             }
         }
 
-        // Recalcule les uniforms de color ramp si nécessaire
+        // Update GPU uniforms for color ramps only (no recompilation needed here)
         this._updateColorRampUniforms();
 
+        // Regenerate shader (without global)
         this.generateShaderStrings(false);
+
         if (this._material) {
             this._material.fragmentShader = fragmentShader;
-            this._material.needsUpdate = true;
+            this._material.needsUpdate = true; // forces GPU recompilation
         }
     }
 
+    // Update color ramp uniforms without rebuilding shader
     _updateColorRampUniforms() {
         if (!this._material) return;
 
@@ -337,5 +347,6 @@ void main() {
     }
 }
 
+// For the code preview
 export function getVertexShader() { return vertexShader; }
 export function getFragmentShader() { return fragmentShader; }
