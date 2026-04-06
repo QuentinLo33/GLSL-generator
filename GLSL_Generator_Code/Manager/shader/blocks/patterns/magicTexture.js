@@ -13,7 +13,11 @@ export class MagicTextureBlock {
     }
     generateCodeGlobal() {
         let codeGlobal =
-`// MAGIC TEXTURE GLOBALS:
+`
+// ===================== 
+// MAGIC TEXTURE GLOBALS:
+// =====================
+
 vec3 magicTexture(vec3 p, float scale, int depth, float distortion) {
     p *= scale;
     float value = 0.0;
@@ -52,7 +56,11 @@ vec3 magicTexture(vec3 p, float scale, int depth, float distortion) {
         const dist = this.distortion.toFixed(2);
 
         let codeMain =
-`    // MAGIC TEXTURE MAIN: ${this.name}
+`
+    // ===================== 
+    // MAGIC TEXTURE MAIN: ${this.name}
+    // =====================
+    
     vec3 ${this.name} = magicTexture(${this.input}, ${s}, ${d}, ${dist});
 
 `;
