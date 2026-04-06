@@ -290,9 +290,10 @@ export async function initShader() {
     console.log("Initial graph:", currentGraphName);
 
     try {
-        await createShaderFromGraph();
+        const result = await createShaderFromGraph();          // ← récupère le résultat
+        if (result?.params) renderParamsPanel(result.params);  // ← construit le panel
         console.log("Shader initialization successful!");
-        applyDefaultModel();;
+        applyDefaultModel();
     } catch (err) {
         console.error("Error shader intialization :", err);
     }
@@ -312,7 +313,8 @@ categorySelect.addEventListener("change", async () => {
 async function updateMaterialType() {
     currentGraphName = `${categorySelect.value}_${subSelect.value}`;
     console.log("Selected sub:", subSelect.value, "-> Graph:", currentGraphName);
-    await createShaderFromGraph();
+    const result = await createShaderFromGraph();              // ← récupère le résultat
+    if (result?.params) renderParamsPanel(result.params);      // ← construit le panel
     applyDefaultModel();
     updateGLSLPreview();
 }
@@ -339,4 +341,96 @@ export function getEnvColors() {
         envFill:   toVec3("env-fill",   new THREE.Color(0.6, 0.6, 0.65)),
         envGround: toVec3("env-ground", new THREE.Color(0.1, 0.1, 0.1)),
     };
+}
+
+/* ----------------------
+    Params panel
+   ---------------------- */
+
+function rgbToHex([r, g, b]) {
+    return "#" + [r, g, b].map(v => v.toString(16).padStart(2, "0")).join("");
+}
+
+function renderParamsPanel(params) {
+    const panel = document.getElementById("params-panel");
+    if (!panel) return;
+    panel.innerHTML = "";
+
+    for (const [sectionName, fields] of Object.entries(params)) {
+
+        // Section header (cliquable pour replier)
+        const section = document.createElement("div");
+        section.className = "param-section";
+
+        const header = document.createElement("div");
+        header.className = "param-section-header";
+        header.textContent = sectionName;
+        header.addEventListener("click", () => {
+            const isOpen = body.style.display !== "none";
+            body.style.display = isOpen ? "none" : "block";
+            header.classList.toggle("open", !isOpen);
+        });
+
+        const body = document.createElement("div");
+        body.className = "param-section-body";
+        body.style.display = "none";
+
+        section.appendChild(header);
+        section.appendChild(body);
+
+        for (const field of fields) {
+            const row = document.createElement("div");
+            row.className = "param-row";
+
+            const label = document.createElement("span");
+            label.className = "param-label";
+            label.textContent = field.label;
+            row.appendChild(label);
+
+            if (field.type === "range" || field.type === "float" || field.type === "int") {
+                const slider = document.createElement("input");
+                slider.type = "range";
+                slider.min = field.min;
+                slider.max = field.max;
+                slider.step = field.step ?? (field.type === "int" ? 1 : 0.01);
+                slider.value = field.default;
+
+                const valueDisplay = document.createElement("span");
+                valueDisplay.className = "param-value";
+                valueDisplay.textContent = field.default;
+
+                slider.addEventListener("input", () => {
+                    const v = parseFloat(slider.value);
+                    valueDisplay.textContent = field.type === "int" ? Math.round(v) : v.toFixed(2);
+                    window.__currentShaderGraph?.updateParam(field.targets, v);
+                    updateGLSLPreview();
+                });
+
+                row.appendChild(slider);
+                row.appendChild(valueDisplay);
+
+            } else if (field.type === "color") {
+                const picker = document.createElement("input");
+                picker.type = "color";
+                picker.value = rgbToHex(field.default);
+
+                picker.addEventListener("input", () => {
+                    const hex = picker.value;
+                    const rgb = [
+                        parseInt(hex.slice(1, 3), 16),
+                        parseInt(hex.slice(3, 5), 16),
+                        parseInt(hex.slice(5, 7), 16)
+                    ];
+                    window.__currentShaderGraph?.updateParam(field.targets, rgb);
+                    updateGLSLPreview();
+                });
+
+                row.appendChild(picker);
+            }
+
+            body.appendChild(row);
+        }
+
+        panel.appendChild(section);
+    }
 }

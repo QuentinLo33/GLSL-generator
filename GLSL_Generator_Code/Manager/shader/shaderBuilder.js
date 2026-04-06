@@ -34,16 +34,17 @@ export async function createShader(graph_name, mesh, camera, light) {
         return;
     }
     try {
-        // Import a graph and retrieve the code
         const module = await importedGraph();
         const graphBlocks = module.getGraph();
+        const params = module.getParams ? module.getParams() : {};  // ← récupère les params
 
-        // Create & apply shader
         const shaderGraph = new ShaderGraph(graphBlocks, "finalColor");
         const material = shaderGraph.createMaterial(camera, light);
-        if(mesh) mesh.material = material;
+        if (mesh) mesh.material = material;
 
-        return material;
+        window.__currentShaderGraph = shaderGraph;  // ← expose pour les updates live
+
+        return { material, params };  // ← retourne les deux
     } catch(err) {
         console.error("Error loading graph:", graph_name, err);
     }

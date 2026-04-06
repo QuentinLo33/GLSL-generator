@@ -285,8 +285,55 @@ void main() {
             },
             extensions: { derivatives: true }
         });
-
+        this._material = material;
         return material;
+    }
+
+    updateParam(targets, value) {
+        for (const { block: blockName, prop, transform, index } of targets) {
+            const block = this.blocks.find(b => b.name === blockName);
+            if (!block) continue;
+
+            const finalValue = transform ? transform(value) : value;
+
+            if (index !== undefined) {
+                block[prop][index] = finalValue;
+            } else {
+                block[prop] = finalValue;
+            }
+        }
+
+        // Recalcule les uniforms de color ramp si nécessaire
+        this._updateColorRampUniforms();
+
+        this.generateShaderStrings(false);
+        if (this._material) {
+            this._material.fragmentShader = fragmentShader;
+            this._material.needsUpdate = true;
+        }
+    }
+
+    _updateColorRampUniforms() {
+        if (!this._material) return;
+
+        const colorRamps = this.blocks.filter(b => b.constructor.name === "ColorRampBlock");
+        if (colorRamps.length === 0) return;
+
+        const maxStops = Math.max(...colorRamps.map(b => b.positions.length));
+        const total    = colorRamps.length * maxStops;
+
+        const colorArr = new Float32Array(total * 3);
+
+        colorRamps.forEach((ramp, i) => {
+            const offset = i * maxStops;
+            ramp.colors.forEach((c, j) => {
+                colorArr[(offset + j) * 3 + 0] = c[0] / 255;
+                colorArr[(offset + j) * 3 + 1] = c[1] / 255;
+                colorArr[(offset + j) * 3 + 2] = c[2] / 255;
+            });
+        });
+
+        this._material.uniforms.ramp_colors.value = colorArr;
     }
 }
 
