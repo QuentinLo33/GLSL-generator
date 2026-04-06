@@ -56,9 +56,9 @@ export class ShaderGraph {
     // Assemble the fragment shader
     generateFullFragment() {
         fragmentShader = `
-// ==================
+// ======================================================
 // Fragment Shader
-// ==================
+// ======================================================
 
 precision highp float;
 
@@ -130,6 +130,10 @@ ${fragmentMain}
     // Static vertex shader
     generateVertex() {
         vertexShader = `
+//==================
+// Vertex Shader
+//==================
+
 varying vec3 vNormal;
 varying vec3 vPosition;
 varying vec2 vUv;

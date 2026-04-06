@@ -18,7 +18,10 @@ export class MapRange {
 
 generateCodeGlobal () {
     let codeGlobal =
-`// MAP RANGE GLOBAL:
+`
+// =====================
+// MAP RANGE GLOBAL
+// =====================
 
 float mapRange(float value, float inMin, float inMax, float outMin, float outMax){
     float t = (value - inMin) / (inMax - inMin);
@@ -63,10 +66,24 @@ generateCodeMain () {
     }
 
     let codeMain =
-`    // MAP RANGE MAIN: ${this.name} (${this.mode})
+`   
+    // =====================    
+    // MAP RANGE MAIN: ${this.name} (${this.mode})
+    // =====================
+
     vec3 ${this.name} = vec3(${mapped});
 
 `;
     return codeMain;
 }
 }
+
+/*   const wavesRemap = new MapRange("wavesRemap", {
+        input: "mixWaves.r",
+        fromMin: 0.3,
+        fromMax: 1.0,
+        toMin: 0.0,
+        toMax: 1.0,
+        mode: "smoothstep"
+    });
+*/
