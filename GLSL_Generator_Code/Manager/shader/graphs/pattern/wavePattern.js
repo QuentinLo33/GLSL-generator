@@ -35,3 +35,45 @@ export function getGraph() {
 
     return [mapping, wave, output];
 }
+
+export function getParams() {
+  return {
+    "Pattern": [
+      {
+        label: "Wave scale",
+        targets: [{ block: "wave", prop: "scale" }],
+        type: "range",
+        min: 1, max: 100, step: 0.5,
+        default: 20.0
+      },
+      {
+        label: "Distortion",
+        targets: [{ block: "wave", prop: "distortion" }],
+        type: "range",
+        min: 0, max: 10, step: 0.1,
+        default: 0.0
+      },
+      {
+        label: "Detail",
+        targets: [{ block: "wave", prop: "detail" }],
+        type: "int",
+        min: 0, max: 10,
+        default: 3
+      },
+      {
+        label: "Detail roughness",
+        targets: [{ block: "wave", prop: "detailRoughness" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.5
+      },
+      {
+        label: "Phase",
+        targets: [{ block: "wave", prop: "phase" }],
+        type: "range",
+        min: 0, max: 6.28, step: 0.01,
+        default: 1.0
+      }
+    ]
+  };
+}

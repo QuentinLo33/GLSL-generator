@@ -124,17 +124,10 @@ export function getParams() {
         default: 0.25
       },
       {
-        label: "Metallic",
-        targets: [{ block: "output", prop: "metallic" }],
-        type: "range",
-        min: 0, max: 1, step: 0.01,
-        default: 0.98
-      },
-      {
         label: "Bump strength",
         targets: [{ block: "bump", prop: "factor" }],
         type: "range",
-        min: 0, max: 0.5, step: 0.005,
+        min: 0, max: 1, step: 0.005,
         default: 0.08
       }
     ],

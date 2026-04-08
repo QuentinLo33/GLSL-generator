@@ -33,3 +33,38 @@ export function getGraph() {
 
     return [mapping, voronoi, output];
 }
+
+export function getParams() {
+  return {
+    "Pattern": [
+      {
+        label: "Voronoi scale",
+        targets: [{ block: "voronoi", prop: "scale" }],
+        type: "range",
+        min: 0.5, max: 20, step: 0.1,
+        default: 2.0
+      },
+      {
+        label: "Detail",
+        targets: [{ block: "voronoi", prop: "detail" }],
+        type: "int",
+        min: 1, max: 16,
+        default: 4
+      },
+      {
+        label: "Randomness",
+        targets: [{ block: "voronoi", prop: "randomness" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 1.0
+      },
+      {
+        label: "Roughness",
+        targets: [{ block: "voronoi", prop: "roughness" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 1.0
+      }
+    ]
+  };
+}

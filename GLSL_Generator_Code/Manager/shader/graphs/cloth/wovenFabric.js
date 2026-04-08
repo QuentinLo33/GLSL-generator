@@ -136,3 +136,89 @@ export function getGraph() {
         output
     ];
 }
+
+export function getParams() {
+  return {
+    "Pattern": [
+      {
+        label: "Thread density",
+        targets: [
+          { block: "waveX", prop: "scale" },
+          { block: "waveY", prop: "scale" }
+        ],
+        type: "range",
+        min: 100, max: 3000, step: 10,
+        default: 1000.0
+      },
+      {
+        label: "Thread distortion",
+        targets: [
+          { block: "waveX", prop: "distortion" },
+          { block: "waveY", prop: "distortion" }
+        ],
+        type: "range",
+        min: 0, max: 10, step: 0.1,
+        default: 2.0
+      },
+      {
+        label: "Weave contrast min",
+        targets: [{ block: "wavesRemap", prop: "fromMin" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.3
+      },
+      {
+        label: "Deformation",
+        targets: [{ block: "mixDeformation", prop: "factor" }],
+        type: "range",
+        min: 0, max: 0.3, step: 0.001,
+        default: 0.05
+      },
+      {
+        label: "Bump strength",
+        targets: [{ block: "bump", prop: "factor" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.15
+      }
+    ],
+
+    "Surface": [
+      {
+        label: "Roughness thread",
+        targets: [{ block: "roughnessFinal", prop: "toMax" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.45
+      },
+      {
+        label: "Roughness hole",
+        targets: [{ block: "roughnessFinal", prop: "toMin" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.75
+      }
+    ],
+
+    "Base Color": [
+      {
+        label: "Thread",
+        targets: [{ block: "colorRamp", prop: "colors", index: 0 }],
+        type: "color",
+        default: [31, 31, 115]
+      },
+      {
+        label: "Thread border",
+        targets: [{ block: "colorRamp", prop: "colors", index: 1 }],
+        type: "color",
+        default: [31, 31, 115]
+      },
+      {
+        label: "Hole",
+        targets: [{ block: "colorRamp", prop: "colors", index: 2 }],
+        type: "color",
+        default: [24, 24, 99]
+      }
+    ]
+  };
+}
