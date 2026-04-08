@@ -29,3 +29,31 @@ export function getGraph() {
 
     return [mapping, woodGrain, output];
 }
+
+export function getParams() {
+  return {
+    "Pattern": [
+      {
+        label: "Grain scale",
+        targets: [{ block: "woodGrain", prop: "scale" }],
+        type: "range",
+        min: 0.5, max: 15, step: 0.1,
+        default: 2.5
+      },
+      {
+        label: "Distortion",
+        targets: [{ block: "woodGrain", prop: "distortion" }],
+        type: "range",
+        min: 0, max: 10, step: 0.05,
+        default: 2.0
+      },
+      {
+        label: "Noise scale",
+        targets: [{ block: "woodGrain", prop: "noiseScale" }],
+        type: "range",
+        min: 0, max: 2, step: 0.01,
+        default: 0.25
+      }
+    ]
+  };
+}

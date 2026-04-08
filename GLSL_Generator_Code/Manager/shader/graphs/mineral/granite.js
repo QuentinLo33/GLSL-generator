@@ -136,3 +136,100 @@ export function getGraph() {
         output
     ];
 }
+
+
+export function getParams() {
+  return {
+    "Pattern": [
+      {
+        label: "Scale",
+        targets: [
+          { block: "mapping", prop: "scale", transform: v => [v, v, v] }
+        ],
+        type: "range",
+        min: 0.5, max: 10, step: 0.1,
+        default: 3.0
+      },
+      {
+        label: "Large spots scale",
+        targets: [{ block: "noiseA", prop: "scale" }],
+        type: "range",
+        min: 0.5, max: 20, step: 0.1,
+        default: 4.0
+      },
+      {
+        label: "Medium spots scale",
+        targets: [{ block: "noiseB", prop: "scale" }],
+        type: "range",
+        min: 0.5, max: 20, step: 0.1,
+        default: 8.0
+      },
+      {
+        label: "Micro spots scale",
+        targets: [{ block: "noiseC", prop: "scale" }],
+        type: "range",
+        min: 0.5, max: 20, step: 0.1,
+        default: 8.0
+      },
+      {
+        label: "Contrast min",
+        targets: [{ block: "remapA", prop: "fromMin" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.25
+      },
+      {
+        label: "Contrast max",
+        targets: [{ block: "remapA", prop: "fromMax" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.55
+      }
+    ],
+
+    "Surface": [
+      {
+        label: "Roughness min",
+        targets: [{ block: "roughnessFinal", prop: "toMin" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.3
+      },
+      {
+        label: "Roughness max",
+        targets: [{ block: "roughnessFinal", prop: "toMax" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.45
+      },
+      {
+        label: "Bump strength",
+        targets: [{ block: "bump", prop: "factor" }],
+        type: "range",
+        min: 0, max: 0.5, step: 0.005,
+        default: 0.2
+      }
+    ],
+
+    "Base Color": [
+      {
+        label: "Spot center",
+        targets: [{ block: "colorRamp", prop: "colors", index: 0 }],
+        type: "color",
+        default: [20, 15, 12]
+      },
+      {
+        label: "Background",
+        targets: [{ block: "colorRamp", prop: "colors", index: 1 }],
+        type: "color",
+        default: [185, 135, 105]
+      },
+      {
+        label: "Spot border",
+        targets: [{ block: "colorRamp", prop: "colors", index: 2 }],
+        type: "color",
+        default: [230, 200, 175]
+      }
+    ]
+  };
+}

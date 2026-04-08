@@ -125,3 +125,105 @@ export function getGraph() {
         output
     ];
 }
+
+export function getParams() {
+  return {
+    "Pattern": [
+      {
+        label: "Scale",
+        targets: [
+          { block: "mapping", prop: "scale", transform: v => [v, v, v] }
+        ],
+        type: "range",
+        min: 0.5, max: 10, step: 0.1,
+        default: 2.0
+      },
+      {
+        label: "Base scale",
+        targets: [{ block: "noiseBase", prop: "scale" }],
+        type: "range",
+        min: 0.5, max: 10, step: 0.1,
+        default: 1.5
+      },
+      {
+        label: "Grain scale",
+        targets: [{ block: "noiseGrain", prop: "scale" }],
+        type: "range",
+        min: 1, max: 30, step: 0.5,
+        default: 12.0
+      },
+      {
+        label: "Micro scale",
+        targets: [{ block: "noiseMicro", prop: "scale" }],
+        type: "range",
+        min: 5, max: 60, step: 1,
+        default: 30.0
+      },
+      {
+        label: "Grain mix",
+        targets: [{ block: "mixAB", prop: "factor" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.6
+      },
+      {
+        label: "Micro mix",
+        targets: [{ block: "mixFinal", prop: "factor" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.2
+      }
+    ],
+
+    "Surface": [
+      {
+        label: "Roughness min",
+        targets: [{ block: "roughnessFinal", prop: "toMin" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.85
+      },
+      {
+        label: "Roughness max",
+        targets: [{ block: "roughnessFinal", prop: "toMax" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 1.0
+      },
+      {
+        label: "Bump strength",
+        targets: [{ block: "bump", prop: "factor" }],
+        type: "range",
+        min: 0, max: 2, step: 0.01,
+        default: 0.8
+      }
+    ],
+
+    "Base Color": [
+      {
+        label: "Dark aggregates",
+        targets: [{ block: "colorRamp", prop: "colors", index: 0 }],
+        type: "color",
+        default: [95, 95, 92]
+      },
+      {
+        label: "Base concrete",
+        targets: [{ block: "colorRamp", prop: "colors", index: 1 }],
+        type: "color",
+        default: [148, 146, 142]
+      },
+      {
+        label: "Light aggregates",
+        targets: [{ block: "colorRamp", prop: "colors", index: 2 }],
+        type: "color",
+        default: [185, 183, 178]
+      },
+      {
+        label: "White aggregates",
+        targets: [{ block: "colorRamp", prop: "colors", index: 3 }],
+        type: "color",
+        default: [210, 208, 204]
+      }
+    ]
+  };
+}

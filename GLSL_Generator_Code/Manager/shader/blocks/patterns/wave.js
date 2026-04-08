@@ -62,66 +62,47 @@ float waveFunc(float x, int type){
         const dR = this.detailRoughness.toFixed(2);
         const phase = this.phase.toFixed(2);
 
-        // Map wave type to integer:
-        // 0 = sine, 1 = triangle, 2 = saw
         const typeIndex =
             this.type === "sine" ? 0 :
             this.type === "triangle" ? 1 : 2;
 
-        // Select axis component used for band generation
-        // (X, Y, or Z coordinate of the input position)
-        const axisComp =
-            this.axis === "X" ? "pos.x" :
-            this.axis === "Y" ? "pos.y" : "pos.z";
-
-        // Prefix used to avoid naming conflicts in GLSL
-        const prefix = this.name + "_";
-
         let codeMain = 
-`
+    `
     // ===================== 
     // WAVE MAIN: ${this.name} (Pattern: ${this.pattern}, Type: ${this.type}, Axis: ${this.axis})
     // ===================== 
-    
-    // Apply global scaling to input position
-    vec3 ${prefix}pos = ${this.input} * ${s};
+        
+    vec3 ${this.name}_pos = ${this.input} * ${s};
 
-    // Apply optional distortion using noise
-    ${prefix}pos += snoise(${this.input} * ${dist}) * ${dist};
+    ${this.name}_pos += snoise(${this.input} * ${dist}) * ${dist};
 
-    float ${prefix}value = 0.0;
+    float ${this.name}_value = 0.0;
 
-    // Pattern selection
-    // Bands: use a single axis component
-    // Rings: use radial distance in XY plane
     ${this.pattern === "rings"
-        ? `${prefix}value = length(${prefix}pos.xy);`
-        : `${prefix}value = ${axisComp};`
-    }
+            ? `${this.name}_value = length(${this.name}_pos.xy);`
+            : `${this.name}_value = ${
+                this.axis === "X" ? `${this.name}_pos.x` :
+                this.axis === "Y" ? `${this.name}_pos.y` :
+                                    `${this.name}_pos.z`
+            };`
+        }
 
-    // Apply wave function with phase offset
-    ${prefix}value = waveFunc(${prefix}value + ${phase}, ${typeIndex});
+    ${this.name}_value = waveFunc(${this.name}_value + ${phase}, ${typeIndex});
 
-    // Fractal detail (multi-octave wave)
-    float ${prefix}amp = 0.5;    // Initial amplitude
-    float ${prefix}freq = 1.0;   // Initial frequency
-    float ${prefix}maxVal = 0.0; // Normalization accumulator
+    float ${this.name}_amp = 0.5;
+    float ${this.name}_freq = 1.0;
+    float ${this.name}_maxVal = 0.0;
 
     for(int i=0;i<${d};i++){
-        // Add additional wave layers for more complexity
-        ${prefix}value += waveFunc(${prefix}value * ${prefix}freq, ${typeIndex}) * ${prefix}amp;
-
-        ${prefix}maxVal += ${prefix}amp;
-
-        // Update amplitude and frequency for next octave
-        ${prefix}amp *= ${dR};
-        ${prefix}freq *= ${dS};
+        ${this.name}_value += waveFunc(${this.name}_value * ${this.name}_freq, ${typeIndex}) * ${this.name}_amp;
+        ${this.name}_maxVal += ${this.name}_amp;
+        ${this.name}_amp *= ${dR};
+        ${this.name}_freq *= ${dS};
     }
 
-    // Final output as a single float stored in a vec3
-    vec3 ${this.name} = vec3(${prefix}value);
+    vec3 ${this.name} = vec3(${this.name}_value);
 
-`;
+    `;
         return codeMain;
     }
 }

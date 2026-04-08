@@ -77,3 +77,98 @@ export function getGraph() {
         bump,
         output];
 }
+
+export function getParams() {
+  return {
+    "Pattern": [
+      {
+        label: "Scale",
+        targets: [
+          { block: "mapping", prop: "scale",  transform: v => [v, v, v] },
+          { block: "noise",   prop: "scale",  transform: v => v * 1.5   }
+        ],
+        type: "range",
+        min: 0.5, max: 5, step: 0.1,
+        default: 2.0
+      },
+      {
+        label: "Detail",
+        targets: [{ block: "noise", prop: "detail" }],
+        type: "int",
+        min: 1, max: 16,
+        default: 5
+      },
+      {
+        label: "Distortion",
+        targets: [{ block: "noise", prop: "distortion" }],
+        type: "range",
+        min: 0, max: 2, step: 0.01,
+        default: 0.0
+      }
+    ],
+
+    "Surface": [
+      {
+        label: "Roughness min",
+        targets: [{ block: "roughness", prop: "toMin" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.05
+      },
+      {
+        label: "Roughness max",
+        targets: [{ block: "roughness", prop: "toMax" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.22
+      },
+      {
+        label: "Metallic",
+        targets: [{ block: "output", prop: "metallic" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.98
+      },
+      {
+        label: "Bump strength",
+        targets: [{ block: "bump", prop: "factor" }],
+        type: "range",
+        min: 0, max: 1, step: 0.005,
+        default: 0.08
+      }
+    ],
+
+    "Base Color": [
+      {
+        label: "Hollows",
+        targets: [{ block: "colorRamp", prop: "colors", index: 0 }],
+        type: "color",
+        default: [150, 155, 158]
+      },
+      {
+        label: "Surface",
+        targets: [{ block: "colorRamp", prop: "colors", index: 1 }],
+        type: "color",
+        default: [188, 188, 192]
+      },
+      {
+        label: "Dim light",
+        targets: [{ block: "colorRamp", prop: "colors", index: 2 }],
+        type: "color",
+        default: [210, 210, 213]
+      },
+      {
+        label: "Light",
+        targets: [{ block: "colorRamp", prop: "colors", index: 3 }],
+        type: "color",
+        default: [228, 228, 230]
+      },
+      {
+        label: "Highlight",
+        targets: [{ block: "colorRamp", prop: "colors", index: 4 }],
+        type: "color",
+        default: [245, 245, 247]
+      }
+    ]
+  };
+}

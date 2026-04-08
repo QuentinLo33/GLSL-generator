@@ -131,3 +131,106 @@ export function getGraph() {
         output
     ];
 }
+
+
+export function getParams() {
+  return {
+    "Pattern": [
+      {
+        label: "Scale",
+        targets: [
+          { block: "mapping", prop: "scale", transform: v => [v, v, v] },
+          { block: "voronoi", prop: "scale", transform: v => v * 0.75  }
+        ],
+        type: "range",
+        min: 1, max: 10, step: 0.1,
+        default: 4.0
+      },
+      {
+        label: "Vein density",
+        targets: [{ block: "waveSaw", prop: "scale" }],
+        type: "range",
+        min: 1, max: 15, step: 0.1,
+        default: 5.0
+      },
+      {
+        label: "Deformation",
+        targets: [{ block: "mixDeformation", prop: "factor" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.8
+      },
+      {
+        label: "Vein mix",
+        targets: [{ block: "mixWave", prop: "factor" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.6
+      },
+      {
+        label: "Randomness",
+        targets: [{ block: "voronoi", prop: "randomness" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.8
+      }
+    ],
+
+    "Surface": [
+      {
+        label: "Roughness min",
+        targets: [{ block: "roughnessFinal", prop: "toMin" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.05
+      },
+      {
+        label: "Roughness max",
+        targets: [{ block: "roughnessFinal", prop: "toMax" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.2
+      },
+      {
+        label: "Bump strength",
+        targets: [{ block: "bump", prop: "factor" }],
+        type: "range",
+        min: 0, max: 0.5, step: 0.005,
+        default: 0.05
+      }
+    ],
+
+    "Base Color": [
+      {
+        label: "Cell center",
+        targets: [{ block: "colorRamp", prop: "colors", index: 0 }],
+        type: "color",
+        default: [25, 80, 70]
+      },
+      {
+        label: "Near center",
+        targets: [{ block: "colorRamp", prop: "colors", index: 1 }],
+        type: "color",
+        default: [55, 130, 115]
+      },
+      {
+        label: "Main surface",
+        targets: [{ block: "colorRamp", prop: "colors", index: 2 }],
+        type: "color",
+        default: [95, 190, 170]
+      },
+      {
+        label: "Light areas",
+        targets: [{ block: "colorRamp", prop: "colors", index: 3 }],
+        type: "color",
+        default: [120, 205, 185]
+      },
+      {
+        label: "Veins",
+        targets: [{ block: "colorRamp", prop: "colors", index: 4 }],
+        type: "color",
+        default: [75, 160, 140]
+      }
+    ]
+  };
+}

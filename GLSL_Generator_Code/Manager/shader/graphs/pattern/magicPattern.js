@@ -29,3 +29,31 @@ export function getGraph() {
 
     return [mapping, magic, output];
 }
+
+export function getParams() {
+  return {
+    "Pattern": [
+      {
+        label: "Magic scale",
+        targets: [{ block: "magic", prop: "scale" }],
+        type: "range",
+        min: 0.5, max: 20, step: 0.1,
+        default: 5.0
+      },
+      {
+        label: "Depth",
+        targets: [{ block: "magic", prop: "depth" }],
+        type: "int",
+        min: 1, max: 10,
+        default: 2
+      },
+      {
+        label: "Distortion",
+        targets: [{ block: "magic", prop: "distortion" }],
+        type: "range",
+        min: 0, max: 20, step: 0.1,
+        default: 5.0
+      }
+    ]
+  };
+}

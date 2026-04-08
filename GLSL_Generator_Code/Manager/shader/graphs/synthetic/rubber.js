@@ -77,3 +77,66 @@ export function getGraph() {
         output
     ];
 }
+
+export function getParams() {
+  return {
+    "Pattern": [
+      {
+        label: "Scale",
+        targets: [
+          { block: "mapping", prop: "scale", transform: v => [v, v, v] }
+        ],
+        type: "range",
+        min: 0.5, max: 5, step: 0.1,
+        default: 1.0
+      },
+      {
+        label: "Cell size",
+        targets: [{ block: "voronoi", prop: "scale" }],
+        type: "range",
+        min: 10, max: 200, step: 1,
+        default: 80.0
+      },
+      {
+        label: "Randomness",
+        targets: [{ block: "voronoi", prop: "randomness" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.8
+      },
+      {
+        label: "Deformation",
+        targets: [{ block: "mixDeformation", prop: "factor" }],
+        type: "range",
+        min: 0, max: 0.2, step: 0.001,
+        default: 0.03
+      }
+    ],
+
+    "Surface": [
+      {
+        label: "Roughness",
+        targets: [{ block: "output", prop: "roughness" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.92
+      },
+      {
+        label: "Bump strength",
+        targets: [{ block: "bump", prop: "factor" }],
+        type: "range",
+        min: 0, max: 3, step: 0.01,
+        default: 1.0
+      }
+    ],
+
+    "Base Color": [
+        {
+            label: "Color",
+            targets: [{ block: "output", prop: "connections", index: "color" }],
+            type: "color",
+            default: [27, 27, 27]
+        }
+    ]
+  };
+}

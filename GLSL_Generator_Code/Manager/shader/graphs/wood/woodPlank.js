@@ -144,3 +144,118 @@ export function getGraph() {
         output
     ];
 }
+
+export function getParams() {
+  return {
+    "Pattern": [
+      {
+        label: "Scale",
+        targets: [
+          { block: "mapping", prop: "scale", transform: v => [v, v * 2, v] }
+        ],
+        type: "range",
+        min: 0.5, max: 5, step: 0.1,
+        default: 1.0
+      },
+      {
+        label: "Grain 1 density",
+        targets: [{ block: "woodGrain", prop: "scale" }],
+        type: "range",
+        min: 1, max: 15, step: 0.1,
+        default: 6.0
+      },
+      {
+        label: "Grain 1 distortion",
+        targets: [{ block: "woodGrain", prop: "distortion" }],
+        type: "range",
+        min: 0, max: 5, step: 0.05,
+        default: 1.5
+      },
+      {
+        label: "Grain 2 density",
+        targets: [{ block: "woodGrain2", prop: "scale" }],
+        type: "range",
+        min: 1, max: 15, step: 0.1,
+        default: 2.5
+      },
+      {
+        label: "Grain 2 distortion",
+        targets: [{ block: "woodGrain2", prop: "distortion" }],
+        type: "range",
+        min: 0, max: 5, step: 0.05,
+        default: 2.0
+      },
+      {
+        label: "Knot intensity",
+        targets: [{ block: "mixFinal", prop: "factor" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.4
+      },
+      {
+        label: "Knot size",
+        targets: [{ block: "voronoiKnot", prop: "scale" }],
+        type: "range",
+        min: 0.5, max: 8, step: 0.1,
+        default: 2.5
+      }
+    ],
+
+    "Surface": [
+      {
+        label: "Roughness min",
+        targets: [{ block: "roughnessFinal", prop: "toMin" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.12
+      },
+      {
+        label: "Roughness max",
+        targets: [{ block: "roughnessFinal", prop: "toMax" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.4
+      },
+      {
+        label: "Bump strength",
+        targets: [{ block: "bump", prop: "factor" }],
+        type: "range",
+        min: 0, max: 0.5, step: 0.005,
+        default: 0.15
+      }
+    ],
+
+    "Base Color": [
+      {
+        label: "Dark waves",
+        targets: [{ block: "colorRamp", prop: "colors", index: 0 }],
+        type: "color",
+        default: [140, 80, 25]
+      },
+      {
+        label: "Border waves",
+        targets: [{ block: "colorRamp", prop: "colors", index: 1 }],
+        type: "color",
+        default: [150, 90, 35]
+      },
+      {
+        label: "Mid waves",
+        targets: [{ block: "colorRamp", prop: "colors", index: 2 }],
+        type: "color",
+        default: [205, 148, 62]
+      },
+      {
+        label: "Knot edge",
+        targets: [{ block: "colorRamp", prop: "colors", index: 3 }],
+        type: "color",
+        default: [232, 195, 115]
+      },
+      {
+        label: "Knot center",
+        targets: [{ block: "colorRamp", prop: "colors", index: 4 }],
+        type: "color",
+        default: [222, 185, 105]
+      }
+    ]
+  };
+}

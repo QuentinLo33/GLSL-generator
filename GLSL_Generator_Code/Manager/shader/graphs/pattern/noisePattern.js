@@ -33,3 +33,38 @@ export function getGraph() {
 
     return [mapping, noise, output];
 }
+
+export function getParams() {
+  return {
+    "Pattern": [
+      {
+        label: "Noise scale",
+        targets: [{ block: "noise", prop: "scale" }],
+        type: "range",
+        min: 0.5, max: 30, step: 0.5,
+        default: 8.0
+      },
+      {
+        label: "Detail",
+        targets: [{ block: "noise", prop: "detail" }],
+        type: "int",
+        min: 1, max: 16,
+        default: 8
+      },
+      {
+        label: "Roughness",
+        targets: [{ block: "noise", prop: "roughness" }],
+        type: "range",
+        min: 0, max: 1, step: 0.01,
+        default: 0.6
+      },
+      {
+        label: "Distortion",
+        targets: [{ block: "noise", prop: "distortion" }],
+        type: "range",
+        min: 0, max: 5, step: 0.01,
+        default: 0.0
+      }
+    ]
+  };
+}

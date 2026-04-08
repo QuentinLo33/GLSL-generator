@@ -308,7 +308,14 @@ void main() {
             const finalValue = transform ? transform(value) : value;
 
             if (index !== undefined) {
-                block[prop][index] = finalValue;
+                if (typeof index === "string") {
+                    // ex: connections.color = "#rrggbb"
+                    const [r, g, b] = finalValue;
+                    block[prop][index] = `#${[r, g, b].map(v => v.toString(16).padStart(2, "0")).join("")}`;
+                } else {
+                    // ex: colors[2] = [r, g, b]
+                    block[prop][index] = finalValue;
+                }
             } else {
                 block[prop] = finalValue;
             }
