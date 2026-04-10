@@ -298,12 +298,6 @@ export function getParams() {
         targets: [{ block: "colorRamp", prop: "colors", index: 2 }],
         type: "color",
         default: [80, 60, 30]
-      },
-      {
-        label: "Light",
-        targets: [{ block: "colorRamp", prop: "colors", index: 3 }],
-        type: "color",
-        default: [20, 250, 20]
       }
     ]
   };
