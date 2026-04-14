@@ -22,7 +22,7 @@ Une **vidéo de démonstration de la version actuelle du projet** est également
 ## Pré-requis : Installer Node.js
 
 Node.js est nécessaire pour gérer les dépendances et exécuter le serveur de développement.
-Télécharge Node.js (version LTS recommandée) depuis le site officiel : [https://nodejs.org](https://nodejs.org)  
+Télécharge Node.js (version LTS recommandée) depuis le site officiel : [https://nodejs.org](https://nodejs.org)
 
 ## Exécuter le projet
 
