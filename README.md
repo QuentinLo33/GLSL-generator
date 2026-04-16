@@ -109,6 +109,6 @@ npm run dev
 
 ## Dépannage (WebGL / affichage)
 
-Si l’application ne s’affiche pas correctement (écran noir, erreurs WebGL), cela peut venir des paramètres du navigateur. Veuillez verifiez vos extension en suivant la vidéo ci-dessous
+Si l’application ne s’affiche pas correctement (écran noir, erreurs WebGL), cela peut venir des paramètres du navigateur. Veuillez verifier vos extension en suivant la vidéo ci-dessous
 
 [Extensions Chrome pour WebGL](https://www.google.com/search?q=extension+google+chrome+pour+webgl)
