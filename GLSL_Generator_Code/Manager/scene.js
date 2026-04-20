@@ -148,7 +148,9 @@ export function createMesh(type = "cube") {
     scene.add(mesh);
     currentModel = mesh;
 
-    createShaderFromGraph();
+    if (window.__currentShaderGraph) {
+        mesh.material = window.__currentShaderGraph.material;
+    }
 }
 
 // load gltf model
@@ -173,7 +175,9 @@ export function loadModel(url) {
                 if (child.isMesh) {
                     mesh = child;
                     currentModel = child;
-                    createShaderFromGraph();
+                    if (window.__currentShaderGraph) {
+                        mesh.material = window.__currentShaderGraph.material;
+                    }
                 }
             });
 

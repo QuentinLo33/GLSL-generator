@@ -88,9 +88,9 @@ function initMaterialSystem() {
    MODEL HANDLING
 ===================================================== */
 function initModelControls() {
-    dom.modelSelect.addEventListener("change", () => {
+    dom.modelSelect.addEventListener("change", async () => {
         handleModelChange(dom.modelSelect.value);
-        updateGLSLPreview(); // ensures that the material is applied correctly
+        updateGLSLPreview();
     });
 }
 

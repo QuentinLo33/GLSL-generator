@@ -45,6 +45,7 @@ export async function createShader(graph_name, mesh, camera, light) {
 
         // Store the instance to allow access elsewhere without passing it as a parameter.
         window.__currentShaderGraph = shaderGraph;
+        window.__currentShaderGraph.material = material;
 
         return { material, params };
     } catch(err) {
